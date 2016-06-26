@@ -7,7 +7,7 @@
 	font-style:italic;
 }
 .bar .title.title-left {
-    text-align: center;
+    text-align: center !important;
 }
 .bar .title.title-right {
-    text-align: center; }
+    text-align: center !important; }
