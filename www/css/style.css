@@ -5,4 +5,9 @@
     
 #login-markdown3{
 	font-style:italic;
-}    
+}
+.bar .title.title-left {
+    text-align: center;
+}
+.bar .title.title-right {
+    text-align: center; }
