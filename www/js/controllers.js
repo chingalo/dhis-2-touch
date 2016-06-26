@@ -47,4 +47,28 @@ angular.module('app.controllers', [])
 .controller('eventCaptureCtrl', function($scope) {
 
 })
+   
+.controller('reportParameterSelectionCtrl', function($scope) {
+
+})
+   
+.controller('reportViewCtrl', function($scope) {
+
+})
+   
+.controller('dataEntryFormCtrl', function($scope) {
+
+})
+   
+.controller('eventRegisterCtrl', function($scope) {
+
+})
+   
+.controller('helpDetailsCtrl', function($scope) {
+
+})
+   
+.controller('settingDetailsCtrl', function($scope) {
+
+})
  

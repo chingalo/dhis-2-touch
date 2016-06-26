@@ -132,6 +132,66 @@ angular.module('app.routes', [])
     }
   })
 
+  .state('tabsController.reportParameterSelection', {
+    url: '/report-parameter-selection',
+    views: {
+      'tab1': {
+        templateUrl: 'templates/reportParameterSelection.html',
+        controller: 'reportParameterSelectionCtrl'
+      }
+    }
+  })
+
+  .state('tabsController.reportView', {
+    url: '/report-view',
+    views: {
+      'tab1': {
+        templateUrl: 'templates/reportView.html',
+        controller: 'reportViewCtrl'
+      }
+    }
+  })
+
+  .state('tabsController.dataEntryForm', {
+    url: '/data-entry-form',
+    views: {
+      'tab1': {
+        templateUrl: 'templates/dataEntryForm.html',
+        controller: 'dataEntryFormCtrl'
+      }
+    }
+  })
+
+  .state('tabsController.eventRegister', {
+    url: '/event-register',
+    views: {
+      'tab1': {
+        templateUrl: 'templates/eventRegister.html',
+        controller: 'eventRegisterCtrl'
+      }
+    }
+  })
+
+  .state('tabsController.helpDetails', {
+    url: '/help-details',
+    views: {
+      'tab2': {
+        templateUrl: 'templates/helpDetails.html',
+        controller: 'helpDetailsCtrl'
+      }
+    }
+  })
+
+  .state('tabsController.settingDetails', {
+    url: '/setting-details',
+    views: {
+      'tab2': {
+        templateUrl: 'templates/settingDetails.html',
+        controller: 'settingDetailsCtrl'
+      }
+    }
+  })
+
 $urlRouterProvider.otherwise('/login')
 
   
