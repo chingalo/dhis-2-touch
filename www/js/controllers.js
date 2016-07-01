@@ -1,4 +1,22 @@
 angular.module('app.controllers', [])
+
+    .controller('mainCtrl',function($scope){
+
+        $scope.$on("$ionicView.beforeEnter", function(event, data){
+            // handle event
+            console.log("State Params: ", data,event);
+        });
+
+        $scope.$on("$ionicView.enter", function(event, data){
+            // handle event
+            console.log("State Params: ", data,event);
+        });
+
+        $scope.$on("$ionicView.afterEnter", function(event, data){
+            // handle event
+            console.log("State Params: ", data,event);
+        });
+    })
   
 .controller('appsCtrl', function($scope) {
 
