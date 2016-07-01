@@ -19,8 +19,29 @@ angular.module('app', ['ionic', 'app.controllers', 'app.routes', 'app.services',
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-
     //hide splash screen
     navigator.splashscreen.hide();
+
+    var db = null;
+    if (window.cordova) {
+      alert('Before database creation Android');
+      db = $cordovaSQLite.openDB({name :"my.db",location: 'default'}); //device
+      console.log("Android");
+      alert('after database creation Android');
+
+    }else{
+      alert('Before database creation browser');
+      db = window.openDatabase("hisptz.db", '1', 'hisptz', 1024 * 1024 * 100); // browser
+      console.log("browser");
+      alert('After database creation browser');
+    }
+    $cordovaSplashscreen.hide();
+    $cordovaSQLite.execute(db, "CREATE TABLE IF NOT EXISTS people (id integer primary key, firstname text, lastname text)").then(function(){
+      alert('table created');
+    },function(){
+      alert('table failed to be created');
+    });
+
+
   });
 })

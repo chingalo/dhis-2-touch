@@ -9,6 +9,21 @@
     "installed_plugins": {
         "cordova-plugin-splashscreen": {
             "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+        },
+        "cordova-plugin-statusbar": {
+            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+        },
+        "cordova-sqlite-storage": {
+            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+        },
+        "ionic-plugin-keyboard": {
+            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
         }
     },
     "dependent_plugins": {}
