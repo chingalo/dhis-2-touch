@@ -1,14 +1,40 @@
 angular.module('app.services', [])
     .factory('appFactory', ['$q',function ($q) {
         var appFactory = {
-            getFormattedUrl : function(url){
+            getFormattedBaseUrl : function(url){
                 var defer = $q.defer();
                 if(url != undefined){
-                    defer.resolve(url);
+                    var baseUrl = appFactory.getFormatUrl(url);
+                    defer.resolve(baseUrl);
                 }else{
                     defer.reject()
                 }
                 return defer.promise;
+            },
+            getFormatUrl :function(url){
+                var urlToBeFormatted = '',newArray = [],formattedBaseUrl = null,baseUrlString = null;
+                if(!((url.startsWith('https') || url.startsWith('http')))){
+                    urlToBeFormatted = "http://"+url;
+                }else{
+                    if(!((url.startsWith('https://') || url.startsWith('http://')))){
+                        urlToBeFormatted = url + "://";
+                    }else{
+                        urlToBeFormatted = url;
+                    }
+                }
+                baseUrlString = urlToBeFormatted.split('/');
+                for (var i = 0; i < baseUrlString.length; i++) {
+                    if (baseUrlString[i]) {
+                        newArray.push(baseUrlString[i]);
+                    }
+                }
+                formattedBaseUrl = newArray[0] + '/';
+                for (var j = 0; j < newArray.length; j++) {
+                    if (j != 0) {
+                        formattedBaseUrl = formattedBaseUrl + '/' + newArray[j];
+                    }
+                }
+                return formattedBaseUrl;
             }
         };
         return appFactory;

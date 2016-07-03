@@ -39,7 +39,7 @@ angular.module('app.controllers', [])
 
         //onclick login button
         $scope.onClickLoginButton = function(){
-            appFactory.getFormattedUrl($scope.data.baseUrl).then(function(formattedUrl){
+            appFactory.getFormattedBaseUrl($scope.data.baseUrl).then(function(formattedUrl){
                 console.log('formattedUrl',formattedUrl);
             },function(){
                 console.log('Please enter url');
