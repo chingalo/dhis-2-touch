@@ -32,16 +32,19 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('loginCtrl', function ($scope,appFactory,userFactory,Notification) {
+    .controller('loginCtrl', function ($scope,appFactory,
+                                       userFactory,Notification,
+                                       $state) {
+
         //variable declarations
         $scope.data = {};
         $scope.data.user = {};
-
         //onclick login button
         $scope.onClickLoginButton = function(){
             appFactory.getFormattedBaseUrl($scope.data.baseUrl).then(function(formattedUrl){
-                console.log('formattedUrl',formattedUrl);
+                Notification.clearAll();
                 Notification.success('formattedUrl : ' + formattedUrl);
+                $state.go('tabsController.apps',{},{})
             },function(){
                 Notification('Please enter server url');
             });

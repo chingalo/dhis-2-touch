@@ -6,6 +6,11 @@
 #login-markdown3{
 	font-style:italic;
 }
+.appPromo{
+    font-style: italic;
+    color:#ffffff;
+    margin-top: 10%;
+}
 .bar .title.title-left {
     text-align: center !important;
 }
