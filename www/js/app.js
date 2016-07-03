@@ -5,33 +5,48 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('app', ['ionic','ngCordova','ngStorage', 'app.controllers', 'app.routes', 'app.services', 'app.directives'])
+angular.module('app', ['ionic',
+        'ngCordova',
+        'ngStorage',
+        'app.controllers',
+        'ui-notification',
+        'app.routes',
+        'app.services',
+        'app.directives'])
 
-    .run(function($ionicPlatform,$cordovaSplashscreen,$cordovaSQLite) {
-      $ionicPlatform.ready(function() {
-        var db = null;
-        if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
-          cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-          cordova.plugins.Keyboard.disableScroll(true);
-        }
-        if (window.StatusBar) {
-          StatusBar.styleDefault();
-        }
-        if (window.cordova) {
-          console.log('Before database creation Android');
-          db = $cordovaSQLite.openDB({name :"demo.db",location: 'default'}); //device
-          console.log("Android");
-          console.log('after database creation Android');
-          $cordovaSplashscreen.hide();
+    .run(function ($ionicPlatform, $cordovaSplashscreen, $cordovaSQLite) {
+        $ionicPlatform.ready(function () {
+            var db = null;
+            if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
+                cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+                cordova.plugins.Keyboard.disableScroll(true);
+            }
+            if (window.StatusBar) {
+                StatusBar.styleDefault();
+            }
+            if (window.cordova) {
+                console.log('Before database creation Android');
+                db = $cordovaSQLite.openDB({name: "demo.db", location: 'default'}); //device
+                console.log("Android");
+                console.log('after database creation Android');
+                $cordovaSplashscreen.hide();
 
-        }else{
-          console.log('Before database creation browser');
-          db = window.openDatabase("hisptz.db", '1', 'hisptz', 1024 * 1024 * 10000); // browser
-          console.log("browser");
-          console.log('After database creation browser');
-        }
+            } else {
+                console.log('Before database creation browser');
+                db = window.openDatabase("hisptz.db", '1', 'hisptz', 1024 * 1024 * 10000); // browser
+                console.log("browser");
+                console.log('After database creation browser');
+            }
 
 
-
-      });
+        });
+    })
+    .config(function(NotificationProvider) {
+        NotificationProvider.setOptions({
+            delay: 10000,
+            startTop: 20,
+            startRight: 10,
+            positionX: 'center',
+            positionY: 'bottom'
+        });
     });

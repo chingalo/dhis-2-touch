@@ -32,7 +32,7 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('loginCtrl', function ($scope,appFactory,userFactory) {
+    .controller('loginCtrl', function ($scope,appFactory,userFactory,Notification) {
         //variable declarations
         $scope.data = {};
         $scope.data.user = {};
@@ -41,9 +41,9 @@ angular.module('app.controllers', [])
         $scope.onClickLoginButton = function(){
             appFactory.getFormattedBaseUrl($scope.data.baseUrl).then(function(formattedUrl){
                 console.log('formattedUrl',formattedUrl);
+                Notification.success('formattedUrl : ' + formattedUrl);
             },function(){
-                console.log('Please enter url');
-                //$scope.data.baseUrl = "";
+                Notification('Please enter server url');
             });
         };
 
