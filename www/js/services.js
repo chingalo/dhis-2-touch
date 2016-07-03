@@ -13,10 +13,10 @@ angular.module('app.services', [])
             },
             getFormatUrl :function(url){
                 var urlToBeFormatted = '',newArray = [],formattedBaseUrl = null,baseUrlString = null;
-                if(!((url.startsWith('https') || url.startsWith('http')))){
+                if(!((url.split('/')[0] == "https" || url.split('/')[0] == "http"))){
                     urlToBeFormatted = "http://"+url;
                 }else{
-                    if(!((url.startsWith('https://') || url.startsWith('http://')))){
+                    if(!((url.split('/')[0] == "https://" || url.split('/')[0] == "http://"))){
                         urlToBeFormatted = url + "://";
                     }else{
                         urlToBeFormatted = url;

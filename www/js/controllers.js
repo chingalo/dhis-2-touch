@@ -42,7 +42,8 @@ angular.module('app.controllers', [])
         $scope.data.user = {};
         //onclick login button
         $scope.onClickLoginButton = function(){
-            appFactory.getFormattedBaseUrl($scope.data.baseUrl).then(function(formattedUrl){
+            var baseUrl = $scope.data.baseUrl;
+            appFactory.getFormattedBaseUrl(baseUrl).then(function(formattedUrl){
                 Notification.clearAll();
                 $localStorage.currentUser.baseUrl = formattedUrl;
                 Notification.success('formattedUrl : ' + formattedUrl);
