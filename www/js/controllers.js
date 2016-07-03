@@ -1,92 +1,111 @@
 angular.module('app.controllers', [])
 
-    .controller('mainCtrl',function($scope){
+    .controller('mainCtrl', function ($scope, userFactory) {
 
-        $scope.$on("$ionicView.beforeEnter", function(event, data){
-            // handle event
-            console.log("State Params: ", data,event);
+        userFactory.setEmptyUser().then(function () {
+            console.log('empty user is added');
         });
 
-        $scope.$on("$ionicView.enter", function(event, data){
-            // handle event
-            console.log("State Params: ", data,event);
-        });
 
-        $scope.$on("$ionicView.afterEnter", function(event, data){
+        /**
+         * Controller for view rendering, enter and leave
+         */
+        $scope.$on("$ionicView.beforeEnter", function (event, data) {
             // handle event
-            console.log("State Params: ", data,event);
+            console.log("State Params: ", data, event);
+        });
+        $scope.$on("$ionicView.enter", function (event, data) {
+            // handle event
+            console.log("State Params: ", data, event);
+        });
+        $scope.$on("$ionicView.afterEnter", function (event, data) {
+            // handle event
+            console.log("State Params: ", data, event);
         });
     })
-  
-.controller('appsCtrl', function($scope) {
 
-})
-   
-.controller('accountCtrl', function($scope) {
+    .controller('appsCtrl', function ($scope) {
 
-})
-      
-.controller('loginCtrl', function($scope) {
+    })
 
-})
-   
-.controller('helpCtrl', function($scope) {
+    .controller('accountCtrl', function ($scope) {
 
-})
-   
-.controller('dataEntryCtrl', function($scope) {
+    })
 
-})
-   
-.controller('profileCtrl', function($scope) {
+    .controller('loginCtrl', function ($scope,appFactory,userFactory) {
+        //variable declarations
+        $scope.data = {};
+        $scope.data.user = {};
 
-})
-   
-.controller('aboutCtrl', function($scope) {
+        //onclick login button
+        $scope.onClickLoginButton = function(){
+            appFactory.getFormattedUrl($scope.data.baseUrl).then(function(formattedUrl){
+                console.log('formattedUrl',formattedUrl);
+            },function(){
+                console.log('Please enter url');
+                //$scope.data.baseUrl = "";
+            });
+        };
 
-})
-   
-.controller('settingsCtrl', function($scope) {
+    })
 
-})
-   
-.controller('dashBoardCtrl', function($scope) {
+    .controller('helpCtrl', function ($scope) {
 
-})
-   
-.controller('trackerCaptureCtrl', function($scope) {
+    })
 
-})
-   
-.controller('reportListCtrl', function($scope) {
+    .controller('dataEntryCtrl', function ($scope) {
 
-})
-   
-.controller('eventCaptureCtrl', function($scope) {
+    })
 
-})
-   
-.controller('reportParameterSelectionCtrl', function($scope) {
+    .controller('profileCtrl', function ($scope) {
 
-})
-   
-.controller('reportViewCtrl', function($scope) {
+    })
 
-})
-   
-.controller('dataEntryFormCtrl', function($scope) {
+    .controller('aboutCtrl', function ($scope) {
 
-})
-   
-.controller('eventRegisterCtrl', function($scope) {
+    })
 
-})
-   
-.controller('helpDetailsCtrl', function($scope) {
+    .controller('settingsCtrl', function ($scope) {
 
-})
-   
-.controller('settingDetailsCtrl', function($scope) {
+    })
 
-})
+    .controller('dashBoardCtrl', function ($scope) {
+
+    })
+
+    .controller('trackerCaptureCtrl', function ($scope) {
+
+    })
+
+    .controller('reportListCtrl', function ($scope) {
+
+    })
+
+    .controller('eventCaptureCtrl', function ($scope) {
+
+    })
+
+    .controller('reportParameterSelectionCtrl', function ($scope) {
+
+    })
+
+    .controller('reportViewCtrl', function ($scope) {
+
+    })
+
+    .controller('dataEntryFormCtrl', function ($scope) {
+
+    })
+
+    .controller('eventRegisterCtrl', function ($scope) {
+
+    })
+
+    .controller('helpDetailsCtrl', function ($scope) {
+
+    })
+
+    .controller('settingDetailsCtrl', function ($scope) {
+
+    })
  
