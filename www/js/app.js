@@ -12,6 +12,7 @@ angular.module('app', ['ionic',
         'ui-notification',
         'app.routes',
         'app.services',
+        'angular-spinkit',
         'app.directives'])
 
     .run(function ($ionicPlatform, $cordovaSplashscreen, $cordovaSQLite) {
