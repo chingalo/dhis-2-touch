@@ -40,7 +40,7 @@ angular.module('app.services', [])
         return appFactory;
     }])
     .factory('userFactory', ['$q', '$localStorage', function ($q, $localStorage) {
-        var emptyUser = {username: '', password: '', isLogin: false};
+        var emptyUser = {username: '', password: '', isLogin: false,baseUrl : ''};
         var userFactory = {
             setCurrentUser: function (user) {
                 var defer = $q.defer();

@@ -34,6 +34,7 @@ angular.module('app.controllers', [])
 
     .controller('loginCtrl', function ($scope,appFactory,
                                        userFactory,Notification,
+                                       $localStorage,
                                        $state) {
 
         //variable declarations
@@ -43,6 +44,7 @@ angular.module('app.controllers', [])
         $scope.onClickLoginButton = function(){
             appFactory.getFormattedBaseUrl($scope.data.baseUrl).then(function(formattedUrl){
                 Notification.clearAll();
+                $localStorage.currentUser.baseUrl = formattedUrl;
                 Notification.success('formattedUrl : ' + formattedUrl);
                 $state.go('tabsController.apps',{},{})
             },function(){
