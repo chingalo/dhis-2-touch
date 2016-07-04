@@ -61,6 +61,9 @@ angular.module('app.controllers', [])
         $scope.data = {
             user : {}
         };
+        if(angular.isDefined($localStorage.currentUser.baseUrl)){
+            $scope.data.baseUrl = $localStorage.currentUser.baseUrl;
+        }
 
         //onclick login button
         $scope.onClickLoginButton = function(){
@@ -68,10 +71,16 @@ angular.module('app.controllers', [])
             appFactory.getFormattedBaseUrl(baseUrl).then(function(formattedUrl){
                 Notification.clearAll();
                 $localStorage.currentUser.baseUrl = formattedUrl;
-                console.log('username',$scope.data.username);
-                console.log('password',$scope.data.password);
                 if(hasUsernameAndPassword()){
-                    $state.go('tabsController.apps',{},{})
+                    $localStorage.currentUser.username = $scope.data.user.username;
+                    $localStorage.currentUser.password = $scope.data.user.password;
+                    appFactory.setAuthorizationOnHeader($scope.data.user).then(function(){
+                        userFactory.authenticateUser().then(function(){
+                            $state.go('tabsController.apps',{},{});
+                        },function(){
+                            Notification.error('Fail')
+                        })
+                    });
                 }
             },function(){
                 Notification('Please enter server url');
@@ -80,11 +89,11 @@ angular.module('app.controllers', [])
 
         function hasUsernameAndPassword(){
             var result = true;
-            if($scope.data.username == undefined){
+            if($scope.data.user.username == undefined){
                 Notification('Please Enter Username');
                 result = false;
             }else{
-                if($scope.data.password == undefined){
+                if($scope.data.user.password == undefined){
                     Notification('Please Enter Password');
                     result = false;
                 }
