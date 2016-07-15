@@ -1,15 +1,23 @@
 angular.module('app.controllers', [])
 
-    .controller('mainCtrl', function ($scope, userFactory) {
+    .controller('mainCtrl', function ($scope, userFactory,$localStorage) {
 
         //object for controller
         $scope.data = {
             loaderState : false
         };
 
-        userFactory.setEmptyUser().then(function () {
-            //empty user is added
-        });
+        //checking if local storage has been initiate
+        if(angular.isUndefined($localStorage.app)){
+            $localStorage.app = {
+                user : {}
+            }
+        }
+
+        /***
+         * create user object
+         */
+        userFactory.setEmptyUser().then(function () {});
 
         /**
          * setChangeViewLoader
@@ -61,8 +69,8 @@ angular.module('app.controllers', [])
         $scope.data = {
             user : {}
         };
-        if(angular.isDefined($localStorage.currentUser.baseUrl)){
-            $scope.data.baseUrl = $localStorage.currentUser.baseUrl;
+        if(angular.isDefined($localStorage.app.baseUrl)){
+            $scope.data.baseUrl = $localStorage.app.baseUrl;
         }
 
         //onclick login button
@@ -70,15 +78,16 @@ angular.module('app.controllers', [])
             var baseUrl = $scope.data.baseUrl;
             appFactory.getFormattedBaseUrl(baseUrl).then(function(formattedUrl){
                 Notification.clearAll();
-                $localStorage.currentUser.baseUrl = formattedUrl;
-                if(hasUsernameAndPassword()){
-                    $localStorage.currentUser.username = $scope.data.user.username;
-                    $localStorage.currentUser.password = $scope.data.user.password;
+                $localStorage.app.baseUrl = formattedUrl;
+                if(hasUsernameAndPasswordEntered()){
                     appFactory.setAuthorizationOnHeader($scope.data.user).then(function(){
-                        userFactory.authenticateUser().then(function(){
-                            $state.go('tabsController.apps',{},{});
-                        },function(){
-                            Notification.error('Fail')
+                        userFactory.authenticateUser($scope.data.user).then(function(userData){
+                            console.log(JSON.stringify(userData));
+                            userFactory.setCurrentUser($scope.data.user).then(function(){
+                                $state.go('tabsController.apps',{},{});
+                            },function(){});
+                        },function(errorStatus){
+                            Notification.error('Fail : ' + errorStatus);
                         })
                     });
                 }
@@ -87,7 +96,7 @@ angular.module('app.controllers', [])
             });
         };
 
-        function hasUsernameAndPassword(){
+        function hasUsernameAndPasswordEntered(){
             var result = true;
             if($scope.data.user.username == undefined){
                 Notification('Please Enter Username');

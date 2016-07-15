@@ -1,5 +1,5 @@
 angular.module('app.services', [])
-    .factory('appFactory', ['$q', 'Base64', '$http', function ($q, Base64, $http) {
+    .factory('appFactory', ['$q', 'Base64', '$http','$localStorage', function ($q, Base64, $http,$localStorage) {
         var appFactory = {
             getFormattedBaseUrl: function (url) {
                 var defer = $q.defer();
@@ -36,7 +36,6 @@ angular.module('app.services', [])
                  var defer = $q.defer();
                 $http.defaults.headers.common.Authorization = 'Basic ' + Base64.encode(user.username + ':' + user.password);
                 defer.resolve();
-                console.log('success set header');
                 return defer.promise;
             }
         };
@@ -44,42 +43,39 @@ angular.module('app.services', [])
     }])
     .factory('userFactory', ['$q', '$localStorage','$http',
         '$httpParamSerializerJQLike', function ($q, $localStorage,$http,$httpParamSerializerJQLike) {
-        var emptyUser = {username: '', password: '', isLogin: false, baseUrl: ''};
+        var emptyUser = {username: '', password: '', isLogin: false};
         var userFactory = {
             authenticateUser: function () {
                 var defer = $q.defer();
-                $http.get($localStorage.currentUser.baseUrl + '/api/me.json').then(function(data){
-                    console.log(JSON.stringify(data));
-                    defer.resolve();
+                $http.get($localStorage.app.baseUrl + '/api/me.json').then(function(response){
+                    //console.log(JSON.stringify(data));
+                    defer.resolve(response.data);
                 },function(error){
-                    console.log('error ' + JSON.stringify(error));
-                    //defer.reject();
+                    defer.reject(error.status);
                 });
                 return defer.promise;
             },
             setCurrentUser: function (user) {
                 var defer = $q.defer();
-                if (angular.isDefined(user.name) && angular.isDefined(user.password)) {
-                    $localStorage.currentUser.isLogin = true;
-                    $localStorage.currentUser.username = user.username;
-                    $localStorage.currentUser.password = user.password;
+                if (angular.isDefined(user.username) && angular.isDefined(user.password)) {
+                    user.isLogin = true;
+                    $localStorage.app.user = user;
                 }
                 defer.resolve();
-                //defer.reject();
                 return defer.promise;
 
             },
             setEmptyUser: function () {
                 var defer = $q.defer();
-                if (!angular.isDefined($localStorage.currentUser)) {
-                    $localStorage.currentUser = emptyUser;
+                if (!angular.isDefined($localStorage.app)) {
+                    $localStorage.app.user= emptyUser;
                 }
-                defer.resolve();
+                defer.resolve(emptyUser);
                 //defer.reject();
                 return defer.promise;
             },
             getCurrentLoginUser: function () {
-                var currentUser = $localStorage.currentUser;
+                var currentUser = $localStorage.app.user;
                 var defer = $q.defer();
                 defer.resolve(currentUser);
                 //defer.reject();
