@@ -1,6 +1,6 @@
 angular.module('app.controllers', [])
 
-    .controller('mainCtrl', function ($scope, userFactory,$timeout,
+    .controller('mainCtrl', function ($scope, userFactory, $timeout,
                                       Notification,
                                       $localStorage, $ionicHistory
         , $state) {
@@ -8,7 +8,7 @@ angular.module('app.controllers', [])
         //object for controller
         $scope.data = {
             loaderState: false,
-            username : ""
+            username: ""
         };
 
         //checking if local storage has been initiate
@@ -17,15 +17,12 @@ angular.module('app.controllers', [])
                 user: {},
                 userData: {}
             }
-        }else{
-            if(angular.isDefined($localStorage.app.userData)){
+        } else {
+            if (angular.isDefined($localStorage.app.userData)) {
                 var nameArray = $localStorage.app.userData.Name.split(' ');
-                if(nameArray[0]){
+                if (nameArray[0]) {
                     $scope.data.username = nameArray[0];
-                }else{
-
                 }
-
             }
         }
 
@@ -219,42 +216,111 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('profileCtrl', function ($scope,userFactory) {
+    .controller('profileCtrl', function ($scope, userFactory) {
 
+        //object for profile controller
         $scope.data = {
-            userInformation : {},
-            userRoles : [],
-            organisationUnits : []
+            userInformation: {},
+            userRoles: [],
+            organisationUnits: [],
+            assignedForms: []
         };
 
+        //waiting for view to be render to pull data form storage
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('profile view has been loaded successfully',data,event)
+            //getting user data for profile view from local storage
+            userFactory.getCurrentLoginUserUserdata().then(function (userData) {
+                //prepare data for profile view
+                $scope.data.userInformation = getUserInformation(userData);
+                $scope.data.userRoles = getUserRoles(userData.userRoles);
+                $scope.data.assignedOrgnisationUnits = userData.organisationUnits;
+                $scope.data.assignedForms = getAssignedFormsList(userData.userRoles);
+            }, function () {
+            })
         });
+
+        function getUserInformation(userData) {
+            var userInformation = {};
+            for (var key in userData) {
+                if (key != "userRoles" && key != "organisationUnits") {
+                    userInformation[key] = userData[key];
+                }
+            }
+            return userInformation;
+        }
+
+        /**
+         * getUserRoles
+         * @param userRolesWithForms
+         * @returns {Array}
+         */
+        function getUserRoles(userRolesWithForms) {
+            var userRoles = [];
+            userRolesWithForms.forEach(function (userRolesWithForm) {
+                userRoles.push(userRolesWithForm.name);
+            });
+            return userRoles;
+        }
+
+        /**
+         * getAssignedFormsList
+         * @param userRolesWithForms
+         * @returns {Array}
+         */
+        function getAssignedFormsList(userRoles) {
+            var assignedFormsList = [];
+            userRoles.forEach(function (userRole) {
+                if (userRole.dataSets) {
+                    userRole.dataSets.forEach(function (dataSet) {
+                        if (shouldAddFormIntoAssigenedFormList(assignedFormsList, dataSet)) {
+                            assignedFormsList.push(dataSet);
+                        }
+                    })
+                }
+            });
+            return assignedFormsList;
+        }
+
+        /**
+         * shouldAddFormIntoAssigenedFormList
+         * @param assignedFormsList
+         * @param form
+         * @returns {boolean}
+         */
+        function shouldAddFormIntoAssigenedFormList(assignedFormsList, form) {
+            var shouldAdd = true;
+            assignedFormsList.forEach(function (assignedForm) {
+                if (assignedForm.id == form.id) {
+                    shouldAdd = false;
+                }
+            });
+            return shouldAdd;
+        }
 
     })
 
     .controller('aboutCtrl', function ($scope) {
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('about view has been loaded successfully',data,event)
+            console.log('about view has been loaded successfully', data, event)
         });
     })
 
     .controller('settingsCtrl', function ($scope) {
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('setting view has been loaded successfully',data,event)
+            console.log('setting view has been loaded successfully', data, event)
         });
     })
 
     .controller('dashBoardCtrl', function ($scope) {
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('dashboard view has been loaded successfully',data,event)
+            console.log('dashboard view has been loaded successfully', data, event)
         });
     })
 
     .controller('trackerCaptureCtrl', function ($scope) {
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('tracker view has been loaded successfully',data,event)
+            console.log('tracker view has been loaded successfully', data, event)
         });
 
     })
@@ -262,7 +328,7 @@ angular.module('app.controllers', [])
     .controller('reportListCtrl', function ($scope) {
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('Report list view has been loaded successfully',data,event)
+            console.log('Report list view has been loaded successfully', data, event)
         });
     })
 
