@@ -15,7 +15,7 @@ angular.module('app', ['ionic',
         'angular-spinkit',
         'app.directives'])
 
-    .run(function ($ionicPlatform, $cordovaSplashscreen, $cordovaSQLite) {
+    .run(function ($ionicPlatform, $cordovaSplashscreen, $cordovaSQLite,sqlLiteFactory) {
         $ionicPlatform.ready(function () {
             var db = null;
             if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {

@@ -32,6 +32,13 @@ angular.module('app.services', [])
                 }
                 return formattedBaseUrl;
             },
+            getDataBaseName : function(){
+                var defer = $q.defer();
+                var databaseName = $localStorage.app.baseUrl;
+                databaseName = databaseName.replace('://','_').replace('/','_').replace('.','_').replace(':','_');
+                defer.resolve(databaseName + '.db');
+                return defer.promise;
+            },
             setAuthorizationOnHeader: function (user) {
                  var defer = $q.defer();
                 $http.defaults.headers.common.Authorization = 'Basic ' + Base64.encode(user.username + ':' + user.password);
@@ -47,19 +54,32 @@ angular.module('app.services', [])
         var userFactory = {
             authenticateUser: function () {
                 var defer = $q.defer();
-                $http.get($localStorage.app.baseUrl + '/api/me.json').then(function(response){
-                    //console.log(JSON.stringify(data));
+                var fields = "fields=[:all],userCredentials[userRoles[name,dataSets[id,name]]";
+                $http.get($localStorage.app.baseUrl + '/api/me.json?'+fields).then(function(response){
                     defer.resolve(response.data);
                 },function(error){
                     defer.reject(error.status);
                 });
                 return defer.promise;
             },
-            setCurrentUser: function (user) {
+            setCurrentUser: function (user,userData) {
                 var defer = $q.defer();
                 if (angular.isDefined(user.username) && angular.isDefined(user.password)) {
-                    user.isLogin = true;
                     $localStorage.app.user = user;
+                }
+                if (angular.isDefined(userData)) {
+                    $localStorage.app.userData = {
+                        "Name": userData.name,
+                        "Employer": userData.employer,
+                        "Job Title": userData.jobTitle,
+                        "Education": userData.education,
+                        "Gender": userData.gender,
+                        "Birthday" : userData.birthday,
+                        "Nationality": userData.nationality,
+                        "Interests": userData.interests,
+                        "userRoles" : userData.userCredentials.userRoles,
+                        "organisationUnits" : userData.organisationUnits
+                    };
                 }
                 defer.resolve();
                 return defer.promise;
@@ -78,10 +98,14 @@ angular.module('app.services', [])
                 var currentUser = $localStorage.app.user;
                 var defer = $q.defer();
                 defer.resolve(currentUser);
-                //defer.reject();
+                return defer.promise;
+            },
+            getCurrentLoginUserUserdata : function(){
+                var currentUserData = $localStorage.app.userData;
+                var defer = $q.defer();
+                defer.resolve(currentUserData);
                 return defer.promise;
             }
-
         };
 
         return userFactory;
@@ -173,7 +197,26 @@ angular.module('app.services', [])
         /* jshint ignore:end */
     })
 
-    .factory('blankFactory', ['$q', function ($q) {
+    .factory('sqlLiteFactory', ['$q','$cordovaSQLite', function ($q,$cordovaSQLite) {
+        var db = null;
+        var sqlLiteFactory = {
+            openDatabase : function(databaseName){
+                var defer = $q.defer();
+                if (window.cordova) {
+                    console.log('Before database creation Android');
+                    db = $cordovaSQLite.openDB({name: databaseName, location: 'default'}); //device
+                    console.log('after database creation Android');
+                } else {
+                    var databaseNameArray = databaseName.split('.');
+                    console.log('Before database creation browser');
+                    db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000); // browser
+                    console.log('After database creation browser');
+                }
+                defer.resolve();
+                return defer.promise;
+            }
+        };
+        return sqlLiteFactory;
 
     }])
     .factory('blankFactory', ['$q', function ($q) {
