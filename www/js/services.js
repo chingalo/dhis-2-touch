@@ -36,6 +36,7 @@ angular.module('app.services', [])
                  var defer = $q.defer();
                 $http.defaults.headers.common.Authorization = 'Basic ' + Base64.encode(user.username + ':' + user.password);
                 defer.resolve();
+                console.log('success set header');
                 return defer.promise;
             }
         };
@@ -47,8 +48,13 @@ angular.module('app.services', [])
         var userFactory = {
             authenticateUser: function () {
                 var defer = $q.defer();
-                defer.resolve();
-                //defer.reject();
+                $http.get($localStorage.currentUser.baseUrl + '/api/me.json').then(function(data){
+                    console.log(JSON.stringify(data));
+                    defer.resolve();
+                },function(error){
+                    console.log('error ' + JSON.stringify(error));
+                    //defer.reject();
+                });
                 return defer.promise;
             },
             setCurrentUser: function (user) {
