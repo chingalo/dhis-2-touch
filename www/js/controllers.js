@@ -1,13 +1,12 @@
 angular.module('app.controllers', [])
 
     .controller('mainCtrl', function ($scope, userFactory, $timeout,
-                                      Notification,$ionicLoading,
+                                      Notification, $ionicLoading,
                                       $localStorage, $ionicHistory
         , $state) {
 
         //object for controller
         $scope.data = {
-            loaderState: false,
             username: ""
         };
 
@@ -15,16 +14,8 @@ angular.module('app.controllers', [])
         if (angular.isUndefined($localStorage.app)) {
             $localStorage.app = {
                 user: {},
-                userData: {}
-            }
-        } else {
-            if (angular.isDefined($localStorage.app.userData)) {
-                if($localStorage.app.userData.Name){
-                    var nameArray = $localStorage.app.userData.Name.split(' ');
-                    if (nameArray[0]) {
-                        $scope.data.username = nameArray[0];
-                    }
-                }
+                userData: {},
+                systemInformation : {}
             }
         }
 
@@ -35,17 +26,8 @@ angular.module('app.controllers', [])
         });
 
         /**
-         * setChangeViewLoader
-         * @param stateName
+         * onClickLogOutButton
          */
-        function setChangeViewLoader(stateName, loaderState) {
-            if (stateName != "login" && stateName != undefined) {
-                $scope.data.loaderState = loaderState;
-            } else {
-                $scope.data.loaderState = false;
-            }
-        }
-
         $scope.onClickLogOutButton = function () {
             //reset user properties
             $localStorage.app.user.isLogin = !$localStorage.app.user.isLogin;
@@ -60,7 +42,7 @@ angular.module('app.controllers', [])
         };
 
         /**
-         * Controller for view rendering, enter and leave
+         * before a view has not been rendered
          */
         $scope.$on("$ionicView.beforeLeave", function (event, data) {
             // handle before view has been leave
@@ -69,25 +51,21 @@ angular.module('app.controllers', [])
             });
         });
 
-        $scope.$on("$ionicView.beforeEnter", function (event, data) {
-            //setChangeViewLoader(data.stateName, true);
-        });
+        /**
+         * after view has been render
+         */
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            //setChangeViewLoader(data.stateName, false);#
             //handling after view has been entered
             $ionicLoading.hide();
+            if (angular.isDefined($localStorage.app.userData)) {
+                if ($localStorage.app.userData.Name) {
+                    var nameArray = $localStorage.app.userData.Name.split(' ');
+                    if (nameArray[0]) {
+                        $scope.data.username = nameArray[0];
+                    }
+                }
+            }
         });
-
-
-
-        //$scope.$on("$ionicView.beforeEnter", function (event, data) {
-        //    // handle event
-        //    console.log("State Params: ", data, event);
-        //});
-        //$scope.$on("$ionicView.enter", function (event, data) {
-        //    // handle event
-        //    console.log("State Params: ", data, event);
-        //});
 
     })
 
@@ -100,7 +78,7 @@ angular.module('app.controllers', [])
     })
 
     .controller('loginCtrl', function ($scope, appFactory,
-                                       userFactory, Notification,
+                                       userFactory, Notification,systemFactory,
                                        $localStorage, sqlLiteFactory,
                                        $state) {
 
@@ -159,7 +137,6 @@ angular.module('app.controllers', [])
                 if (hasUsernameAndPasswordEntered()) {
                     //set authorization header
                     appFactory.setAuthorizationOnHeader($scope.data.user).then(function () {
-
                         //authenticate user
                         userFactory.authenticateUser($scope.data.user).then(function (userData) {
 
@@ -168,14 +145,19 @@ angular.module('app.controllers', [])
 
                                 //getting database name
                                 appFactory.getDataBaseName().then(function (databaseName) {
-
                                     $localStorage.app.baseBaseName = databaseName;
                                     //open database
                                     sqlLiteFactory.openDatabase(databaseName).then(function () {
-                                        $localStorage.app.user.isLogin = true;
-                                        $state.go('tabsController.apps', {}, {});
+                                        //getting dhis 2 instance system information
+                                        systemFactory.getDhis2InstanceSystemInfo().then(function(data){
+                                            $localStorage.app.systemInformation = data;
+                                            $localStorage.app.user.isLogin = true;
+                                            $state.go('tabsController.apps', {}, {});
+                                        },function(){
+                                            //error on getting system information
+                                            Notification.error('Fail to load System information, please checking your network connection');
+                                        });
                                     }, function () {
-
                                     });
                                 }, function () {
                                 });
@@ -312,21 +294,61 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('aboutCtrl', function ($scope) {
+    .controller('aboutCtrl', function ($scope,$localStorage) {
 
         //object for about controller
         $scope.data = {
-            appInformation: {},
+            appInformation: {
+                Name: 'DHIS 2 Touch',
+                Version: '1.01',
+                'App revision': '3e8e302',
+                'Release status': 'Snapshot'
+                //'Release' 'Snapshot'
+            },
             systemInformation: {},
             storageStatus: {
-                dataValues: {},
-                events: {},
+                dataValues: {
+                    synced: {
+                        value: 0
+                    },
+                    unSynced: {
+                        value: 0
+                    }
+                },
+                events: {
+                    synced: {
+                        value: 0
+                    },
+                    unSynced: {
+                        value: 0
+                    }
+                },
                 metaData: {}
             }
         };
 
+
+        /**
+         * getSystemInfoName
+         * @param key
+         * @returns {string}
+         */
+        $scope.getSystemInfoName = function(key){
+            return (key.charAt(0).toUpperCase() + key.slice(1)).replace(/([A-Z])/g, ' $1').trim();
+        };
+
+        /**
+         * getSystemInformation
+         */
+        function getSystemInformation(){
+            if (angular.isDefined($localStorage.app)) {
+                console.log($localStorage.systemInformation);
+                $scope.data.systemInformation = $localStorage.app.systemInformation;
+            }
+        }
+
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('about view has been loaded successfully', data, event)
+            getSystemInformation();
         });
     })
 

@@ -226,13 +226,12 @@ angular.module('app.services', [])
             getDhis2InstanceSystemInfo : function(){
                 var defer = $q.defer();
                 $http.get($localStorage.app.baseUrl + '/api/system/info').then(function(response){
-                    console.log(response);
-                    //defer.resolve(response.data);
+                    defer.resolve(response.data);
                 },function(error){
                     console.log('error',error);
-                    //defer.reject(error.status);
+                    defer.reject(error.status);
                 });
-                //return defer.promise;
+                return defer.promise;
             }
         };
         return systemFactory;
