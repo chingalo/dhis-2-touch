@@ -1,4 +1,5 @@
 angular.module('app.services', [])
+
     .factory('appFactory', ['$q', 'Base64', '$http','$localStorage', function ($q, Base64, $http,$localStorage) {
         var appFactory = {
             getFormattedBaseUrl: function (url) {
@@ -48,8 +49,8 @@ angular.module('app.services', [])
         };
         return appFactory;
     }])
-    .factory('userFactory', ['$q', '$localStorage','$http',
-        '$httpParamSerializerJQLike', function ($q, $localStorage,$http,$httpParamSerializerJQLike) {
+
+    .factory('userFactory', ['$q', '$localStorage','$http', function ($q, $localStorage,$http) {
         var emptyUser = {username: '', password: '', isLogin: false};
         var userFactory = {
             authenticateUser: function () {
@@ -219,9 +220,28 @@ angular.module('app.services', [])
         return sqlLiteFactory;
 
     }])
+
+    .factory('systemFactory', ['$q','$http','$localStorage', function ($q,$http,$localStorage) {
+        var systemFactory = {
+            getDhis2InstanceSystemInfo : function(){
+                var defer = $q.defer();
+                $http.get($localStorage.app.baseUrl + '/api/system/info').then(function(response){
+                    console.log(response);
+                    //defer.resolve(response.data);
+                },function(error){
+                    console.log('error',error);
+                    //defer.reject(error.status);
+                });
+                //return defer.promise;
+            }
+        };
+        return systemFactory;
+    }])
+
     .factory('blankFactory', ['$q', function ($q) {
 
     }])
+
     .service('BlankService', [function () {
 
     }]);

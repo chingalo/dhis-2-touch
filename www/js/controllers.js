@@ -1,7 +1,7 @@
 angular.module('app.controllers', [])
 
     .controller('mainCtrl', function ($scope, userFactory, $timeout,
-                                      Notification,
+                                      Notification,$ionicLoading,
                                       $localStorage, $ionicHistory
         , $state) {
 
@@ -19,9 +19,11 @@ angular.module('app.controllers', [])
             }
         } else {
             if (angular.isDefined($localStorage.app.userData)) {
-                var nameArray = $localStorage.app.userData.Name.split(' ');
-                if (nameArray[0]) {
-                    $scope.data.username = nameArray[0];
+                if($localStorage.app.userData.Name){
+                    var nameArray = $localStorage.app.userData.Name.split(' ');
+                    if (nameArray[0]) {
+                        $scope.data.username = nameArray[0];
+                    }
                 }
             }
         }
@@ -60,12 +62,23 @@ angular.module('app.controllers', [])
         /**
          * Controller for view rendering, enter and leave
          */
+        $scope.$on("$ionicView.beforeLeave", function (event, data) {
+            // handle before view has been leave
+            $ionicLoading.show({
+                template: 'Please waiting'
+            });
+        });
+
         $scope.$on("$ionicView.beforeEnter", function (event, data) {
-            setChangeViewLoader(data.stateName, true);
+            //setChangeViewLoader(data.stateName, true);
         });
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            setChangeViewLoader(data.stateName, false);
+            //setChangeViewLoader(data.stateName, false);#
+            //handling after view has been entered
+            $ionicLoading.hide();
         });
+
+
 
         //$scope.$on("$ionicView.beforeEnter", function (event, data) {
         //    // handle event
@@ -300,6 +313,17 @@ angular.module('app.controllers', [])
     })
 
     .controller('aboutCtrl', function ($scope) {
+
+        //object for about controller
+        $scope.data = {
+            appInformation: {},
+            systemInformation: {},
+            storageStatus: {
+                dataValues: {},
+                events: {},
+                metaData: {}
+            }
+        };
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
             console.log('about view has been loaded successfully', data, event)
