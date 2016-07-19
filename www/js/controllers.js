@@ -172,7 +172,6 @@ angular.module('app.controllers', [])
         function downloadOrganisationUnitsData(organisationUnits){
             var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
             var promises = [];
-            console.log('dataBaseStructure : ',dataBaseStructure);
             var orgUnitId = null,fields=null,resource = "organisationUnits";
             if(organisationUnits.length > 0){
                 var organisationUnitsData = [];
@@ -191,9 +190,21 @@ angular.module('app.controllers', [])
                     );
                 });
                 $q.all(promises).then(function () {
-                    console.log('organisationUnitsData',organisationUnitsData);
-                    $localStorage.app.user.isLogin = true;
-                    $state.go('tabsController.apps', {}, {});
+                    //saving org units
+                    var promises = [];
+                    organisationUnitsData.forEach(function(data){
+                        promises.push(
+                            sqlLiteFactory.insertDataOnTable(resource,dataBaseStructure[resource].fields,data).then(function(){
+                            },function(){})
+                        );
+                    });
+                    $q.all(promises).then(function(){
+                        $localStorage.app.user.isLogin = true;
+                        $state.go('tabsController.apps', {}, {});
+                    },function(){
+                        Notification('Fail to save assigned organisation units data');
+                    });
+
                 }, function () {
                     Notification('Fail to download assigned organisation units data');
                 });
@@ -362,7 +373,6 @@ angular.module('app.controllers', [])
          */
         function getSystemInformation(){
             if (angular.isDefined($localStorage.app)) {
-                console.log($localStorage.systemInformation);
                 $scope.data.systemInformation = $localStorage.app.systemInformation;
             }
         }
@@ -424,5 +434,5 @@ angular.module('app.controllers', [])
 
     .controller('settingDetailsCtrl', function ($scope) {
 
-    })
+    });
  

@@ -267,7 +267,54 @@ angular.module('app.services', [])
                 }
                 defer.resolve();
                 return defer.promise;
+            },
+            insertDataOnTable : function(tableName,fields,fieldsValues){
+                var dataColumns = "", questionMarks = "", values = [], defer = $q.defer(),databaseName = $localStorage.app.baseBaseName;
+                fields.forEach(function (field, index) {
+                    var dataColumn = field.value;
+                    if (fieldsValues[dataColumn]) {
+                        var dataColumnValue = fieldsValues[dataColumn];
+                    }
+                    dataColumns += dataColumn;
+                    questionMarks += "?";
+                    if ((index + 1) < fields.length) {
+                        dataColumns += ',';
+                        questionMarks += ',';
+                    }
+                    if (field.type != "LONGTEXT") {
+                        values.push(dataColumnValue)
+                    } else {
+                        values.push(JSON.stringify(dataColumnValue));
+                    }
+                });
+                var query = "INSERT OR REPLACE INTO " + tableName + " (" + dataColumns + ") VALUES (" + questionMarks + ")";
+                if (window.cordova) {
+                    //for mobile devices
+                    db = $cordovaSQLite.openDB({name: databaseName, location: 'default'});
+                    $cordovaSQLite.execute(db, query, values).then(function (res) {
+                        defer.resolve();
+                    }, function () {
+                        defer.reject();
+                    });
+                }
+                else {
+                    //for browser
+                    var databaseNameArray = databaseName.split('.');
+                    db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000);
+                    db.transaction(function (tx) {
+                        tx.executeSql(query, values, function (tx, result) {
+                            defer.resolve();
+                        }, function (error) {
+                            defer.reject();
+                        });
+                    });
+                }
+                return defer.promise;
+            },
+            getDataFromTable : function(tableName,fields,ids){
+                var defer = $q.defer(),db=null;
             }
+
         };
         return sqlLiteFactory;
 
