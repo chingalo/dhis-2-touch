@@ -1,6 +1,6 @@
 angular.module('app.services', [])
 
-    .factory('appFactory', ['$q', 'Base64', '$http','$localStorage', function ($q, Base64, $http,$localStorage) {
+    .factory('appFactory', ['$q', 'Base64', '$http', '$localStorage', function ($q, Base64, $http, $localStorage) {
         var appFactory = {
             getFormattedBaseUrl: function (url) {
                 var defer = $q.defer();
@@ -15,7 +15,7 @@ angular.module('app.services', [])
             getFormatUrl: function (url) {
                 var urlToBeFormatted = '', newArray = [], formattedBaseUrl = null, baseUrlString = null;
                 if (!(url.split('/')[0] == "https:" || url.split('/')[0] == "http:")) {
-                    urlToBeFormatted =  "http://" + url;
+                    urlToBeFormatted = "http://" + url;
                 } else {
                     urlToBeFormatted = url;
                 }
@@ -33,15 +33,15 @@ angular.module('app.services', [])
                 }
                 return formattedBaseUrl;
             },
-            getDataBaseName : function(){
+            getDataBaseName: function () {
                 var defer = $q.defer();
                 var databaseName = $localStorage.app.baseUrl;
-                databaseName = databaseName.replace('://','_').replace('/','_').replace('.','_').replace(':','_');
+                databaseName = databaseName.replace('://', '_').replace('/', '_').replace('.', '_').replace(':', '_');
                 defer.resolve(databaseName + '.db');
                 return defer.promise;
             },
             setAuthorizationOnHeader: function (user) {
-                 var defer = $q.defer();
+                var defer = $q.defer();
                 $http.defaults.headers.common.Authorization = 'Basic ' + Base64.encode(user.username + ':' + user.password);
                 defer.resolve();
                 return defer.promise;
@@ -50,20 +50,20 @@ angular.module('app.services', [])
         return appFactory;
     }])
 
-    .factory('userFactory', ['$q', '$localStorage','$http', function ($q, $localStorage,$http) {
+    .factory('userFactory', ['$q', '$localStorage', '$http', function ($q, $localStorage, $http) {
         var emptyUser = {username: '', password: '', isLogin: false};
         var userFactory = {
             authenticateUser: function () {
                 var defer = $q.defer();
                 var fields = "fields=[:all],userCredentials[userRoles[name,dataSets[id,name]]";
-                $http.get($localStorage.app.baseUrl + '/api/me.json?'+fields).then(function(response){
+                $http.get($localStorage.app.baseUrl + '/api/me.json?' + fields).then(function (response) {
                     defer.resolve(response.data);
-                },function(error){
+                }, function (error) {
                     defer.reject(error.status);
                 });
                 return defer.promise;
             },
-            setCurrentUser: function (user,userData) {
+            setCurrentUser: function (user, userData) {
                 var defer = $q.defer();
                 if (angular.isDefined(user.username) && angular.isDefined(user.password)) {
                     $localStorage.app.user = user;
@@ -75,11 +75,11 @@ angular.module('app.services', [])
                         "Job Title": userData.jobTitle,
                         "Education": userData.education,
                         "Gender": userData.gender,
-                        "Birthday" : userData.birthday,
+                        "Birthday": userData.birthday,
                         "Nationality": userData.nationality,
                         "Interests": userData.interests,
-                        "userRoles" : userData.userCredentials.userRoles,
-                        "organisationUnits" : userData.organisationUnits
+                        "userRoles": userData.userCredentials.userRoles,
+                        "organisationUnits": userData.organisationUnits
                     };
                 }
                 defer.resolve();
@@ -89,7 +89,7 @@ angular.module('app.services', [])
             setEmptyUser: function () {
                 var defer = $q.defer();
                 if (!angular.isDefined($localStorage.app)) {
-                    $localStorage.app.user= emptyUser;
+                    $localStorage.app.user = emptyUser;
                 }
                 defer.resolve(emptyUser);
                 //defer.reject();
@@ -101,7 +101,7 @@ angular.module('app.services', [])
                 defer.resolve(currentUser);
                 return defer.promise;
             },
-            getCurrentLoginUserUserdata : function(){
+            getCurrentLoginUserUserdata: function () {
                 var currentUserData = $localStorage.app.userData;
                 var defer = $q.defer();
                 defer.resolve(currentUserData);
@@ -198,20 +198,72 @@ angular.module('app.services', [])
         /* jshint ignore:end */
     })
 
-    .factory('sqlLiteFactory', ['$q','$cordovaSQLite', function ($q,$cordovaSQLite) {
+    .factory('sqlLiteFactory', ['$q', '$cordovaSQLite', '$localStorage', function ($q, $cordovaSQLite, $localStorage) {
         var db = null;
+        var databaseStructure = {
+            organisationUnits: {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'name', type: 'TEXT'},
+                    {value: 'ancestors', type: 'LONGTEXT'},
+                    {value: 'dataSets', type: 'LONGTEXT'},
+                    {value: 'level', type: 'TEXT'},
+                    {value: 'children', type: 'LONGTEXT'}
+                ]
+            }
+        };
+
         var sqlLiteFactory = {
-            openDatabase : function(databaseName){
+            getDataBaseStructure: function () {
+                return databaseStructure;
+            },
+            openDatabase: function (databaseName) {
                 var defer = $q.defer();
                 if (window.cordova) {
-                    console.log('Before database creation Android');
-                    db = $cordovaSQLite.openDB({name: databaseName, location: 'default'}); //device
-                    console.log('after database creation Android');
+                    //device
+                    db = $cordovaSQLite.openDB({name: databaseName, location: 'default'});
                 } else {
+                    // browser
                     var databaseNameArray = databaseName.split('.');
-                    console.log('Before database creation browser');
-                    db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000); // browser
-                    console.log('After database creation browser');
+                    db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000);
+                }
+                defer.resolve();
+                return defer.promise;
+            },
+            createTable: function (tableName, fields) {
+                var defer = $q.defer();
+                var db = null, query = 'CREATE TABLE IF NOT EXISTS ' + tableName + ' (', databaseName = $localStorage.app.baseBaseName;
+                fields.forEach(function (field, index) {
+                    if (field.value == "id") {
+                        query += field.value + " " + field.type + ' primary key';
+                    } else {
+                        query += field.value + " " + field.type;
+                    }
+                    if ((index + 1) < fields.length) {
+                        query += ','
+                    }
+                });
+                query += ')';
+                if (window.cordova) {
+                    //for mobile devices
+                    db = $cordovaSQLite.openDB({name: databaseName, location: 'default'});
+                    $cordovaSQLite.execute(db, query, []).then(function (res) {
+                        defer.resolve();
+                    }, function () {
+                        defer.reject();
+                    });
+                }
+                else {
+                    //for browser
+                    var databaseNameArray = databaseName.split('.');
+                    db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000);
+                    db.transaction(function (tx) {
+                        tx.executeSql(query, [], function (tx, result) {
+                            defer.resolve();
+                        }, function (error) {
+                            defer.reject();
+                        });
+                    });
                 }
                 defer.resolve();
                 return defer.promise;
@@ -221,14 +273,35 @@ angular.module('app.services', [])
 
     }])
 
-    .factory('systemFactory', ['$q','$http','$localStorage', function ($q,$http,$localStorage) {
+    .factory('systemFactory', ['$q', '$http', '$localStorage', function ($q, $http, $localStorage) {
         var systemFactory = {
-            getDhis2InstanceSystemInfo : function(){
+            getDhis2InstanceSystemInfo: function () {
                 var defer = $q.defer();
-                $http.get($localStorage.app.baseUrl + '/api/system/info').then(function(response){
+                $http.get($localStorage.app.baseUrl + '/api/system/info').then(function (response) {
                     defer.resolve(response.data);
-                },function(error){
-                    console.log('error',error);
+                }, function (error) {
+                    console.log('error', error);
+                    defer.reject(error.status);
+                });
+                return defer.promise;
+            },
+            downloadMetadata: function (resource, resourceId, fields, filter) {
+                var defer = $q.defer();
+                var url = $localStorage.app.baseUrl + '/api/' + resource;
+                if (resourceId || resourceId != null) {
+                    url += "/" + resourceId + ".json?paging=false";
+                } else {
+                    url += ".json?paging=false";
+                }
+                if (fields || fields != null) {
+                    url += '&fields=' + fields;
+                }
+                if (filter || filter != null) {
+                    url += '&filter' + filter;
+                }
+                $http.get(url).then(function (response) {
+                    defer.resolve(response.data);
+                }, function (error) {
                     defer.reject(error.status);
                 });
                 return defer.promise;

@@ -77,7 +77,7 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('loginCtrl', function ($scope, appFactory,
+    .controller('loginCtrl', function ($scope, appFactory,$q,
                                        userFactory, Notification,systemFactory,
                                        $localStorage, sqlLiteFactory,
                                        $state) {
@@ -96,29 +96,7 @@ angular.module('app.controllers', [])
             userFactory.getCurrentLoginUser().then(function (user) {
                 if (user.isLogin) {
                     appFactory.setAuthorizationOnHeader(user).then(function () {
-                        if (angular.isDefined($localStorage.app.baseBaseName)) {
-                            //open database
-                            sqlLiteFactory.openDatabase($localStorage.app.baseBaseName).then(function () {
-                                $state.go('tabsController.apps', {}, {});
-                            }, function () {
-                                //redirect to login page with fail to open database
-                            });
-                        } else {
-                            //try to get database name
-                            appFactory.getDataBaseName().then(function (databaseName) {
-                                $localStorage.app.baseBaseName = databaseName;
-                                //open database
-                                sqlLiteFactory.openDatabase($localStorage.app.baseBaseName).then(function () {
-                                    $state.go('tabsController.apps', {}, {});
-                                }, function () {
-                                    //redirect to login page with fail to open database
-                                });
-
-                            }, function () {
-                                //redirect to login page as database name can not found
-                            });
-                        }
-                    }, function () {
+                        $state.go('tabsController.apps', {}, {});
                     });
                 }
             }, function () {
@@ -139,25 +117,33 @@ angular.module('app.controllers', [])
                     appFactory.setAuthorizationOnHeader($scope.data.user).then(function () {
                         //authenticate user
                         userFactory.authenticateUser($scope.data.user).then(function (userData) {
-
                             //setCurrent login user
                             userFactory.setCurrentUser($scope.data.user, userData).then(function () {
-
                                 //getting database name
                                 appFactory.getDataBaseName().then(function (databaseName) {
                                     $localStorage.app.baseBaseName = databaseName;
-                                    //open database
-                                    sqlLiteFactory.openDatabase(databaseName).then(function () {
+                                    //@todo populate all tables for a given database
+                                    var promises = [];
+                                    //table as value , tableName as key
+                                    angular.forEach(sqlLiteFactory.getDataBaseStructure(), function(table, tableName){
+                                        promises.push(
+                                            sqlLiteFactory.createTable(tableName,table.fields).then(function(){
+
+                                            },function(){})
+                                        );
+                                    });
+                                    $q.all(promises).then(function () {
                                         //getting dhis 2 instance system information
                                         systemFactory.getDhis2InstanceSystemInfo().then(function(data){
                                             $localStorage.app.systemInformation = data;
-                                            $localStorage.app.user.isLogin = true;
-                                            $state.go('tabsController.apps', {}, {});
+                                            downloadOrganisationUnitsData(userData.organisationUnits);
                                         },function(){
                                             //error on getting system information
                                             Notification.error('Fail to load System information, please checking your network connection');
                                         });
                                     }, function () {
+                                        //error on prepare database
+                                        Notification('Fail to prepare database');
                                     });
                                 }, function () {
                                 });
@@ -183,6 +169,40 @@ angular.module('app.controllers', [])
             });
         };
 
+        function downloadOrganisationUnitsData(organisationUnits){
+            var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+            var promises = [];
+            console.log('dataBaseStructure : ',dataBaseStructure);
+            var orgUnitId = null,fields=null,resource = "organisationUnits";
+            if(organisationUnits.length > 0){
+                var organisationUnitsData = [];
+                organisationUnits.forEach(function(organisationUnit){
+                    if(organisationUnit.id){
+                        orgUnitId=organisationUnit.id;
+                        fields="id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name]]]]]]";
+                    }
+                    promises.push(
+                        systemFactory.downloadMetadata(resource,orgUnitId,fields).then(function(orgUnitData){
+                            //success on downloading
+                            organisationUnitsData.push(orgUnitData);
+                        },function(){
+                            //error on downloading
+                        })
+                    );
+                });
+                $q.all(promises).then(function () {
+                    console.log('organisationUnitsData',organisationUnitsData);
+                    $localStorage.app.user.isLogin = true;
+                    $state.go('tabsController.apps', {}, {});
+                }, function () {
+                    Notification('Fail to download assigned organisation units data');
+                });
+            }else{
+                Notification('You have not been assigned to any organisation Units');
+            }
+
+        }
+
         /**
          * hasUsernameAndPasswordEntered
          * @returns {boolean}
@@ -207,7 +227,7 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryCtrl', function ($scope) {
+    .controller('dataEntryCtrl', function ($scope,$localStorage,sqlLiteFactory) {
 
     })
 

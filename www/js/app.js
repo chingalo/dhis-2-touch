@@ -25,20 +25,6 @@ angular.module('app', ['ionic',
             if (window.StatusBar) {
                 StatusBar.styleDefault();
             }
-            if (window.cordova) {
-                console.log('Before database creation Android');
-                db = $cordovaSQLite.openDB({name: "demo.db", location: 'default'}); //device
-                console.log("Android");
-                console.log('after database creation Android');
-                $cordovaSplashscreen.hide();
-
-            } else {
-                console.log('Before database creation browser');
-                db = window.openDatabase("demo.db", '1', 'demo', 1024 * 1024 * 10000); // browser
-                console.log("browser");
-                console.log('After database creation browser');
-            }
-
 
         });
     })
