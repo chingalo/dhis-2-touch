@@ -311,8 +311,60 @@ angular.module('app.services', [])
                 }
                 return defer.promise;
             },
-            getDataFromTable : function(tableName,fields,ids){
-                var defer = $q.defer(),db=null;
+            getDataFromTableByAttributes : function(tableName,fields,attribute,attributesValuesArray){
+                var db = null,values = [], defer = $q.defer(),databaseName = $localStorage.app.baseBaseName,query = "";
+                query +="SELECT * FROM " +tableName+" WHERE "+attribute+" IN (";
+                var inClauseValues = "";
+                attributesValuesArray.forEach(function(attributesValue,index){
+                    inClauseValues += "'" + attributesValue + "'";
+                    if ((index + 1) < attributesValuesArray.length) {
+                        inClauseValues += ',';
+                    }
+                });
+                query +=inClauseValues;
+                query +=")";
+
+                if (window.cordova) {
+                    //for mobile devices
+                    db = $cordovaSQLite.openDB({name: databaseName, location: 'default'});
+                    $cordovaSQLite.execute(db, query, values).then(function (result) {
+                        defer.resolve(sqlLiteFactory.formatQueryReturnResult(result,fields));
+                    }, function () {
+                        defer.reject();
+                    });
+                }
+                else {
+                    //for browser
+                    var databaseNameArray = databaseName.split('.');
+                    db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000);
+                    db.transaction(function (tx) {
+                        tx.executeSql(query, values, function (tx, result) {
+                            defer.resolve(sqlLiteFactory.formatQueryReturnResult(result,fields));
+                        }, function (error) {
+                            defer.reject();
+                        });
+                    });
+                }
+                return defer.promise;
+            },
+            formatQueryReturnResult : function(result,fields){
+                var len = result.rows.length;
+                var data = [];
+
+                for (var i = 0; i < len; i++) {
+                    var row = {};
+                    var currentRow = result.rows.item(i);
+                    fields.forEach(function (field) {
+                        var dataColumn = field.value;
+                        if (field.type != "LONGTEXT") {
+                            row[dataColumn] =  currentRow[dataColumn]
+                        } else {
+                            row[dataColumn] = eval("(" + currentRow[dataColumn] + ")");
+                        }
+                    });
+                    data.push(row);
+                }
+                return data;
             }
 
         };
@@ -360,8 +412,52 @@ angular.module('app.services', [])
     .factory('blankFactory', ['$q', function ($q) {
 
     }])
+    .factory('organisationUnitFactory', ['$q','$filter', function ($q,$filter) {
+
+        var organisationUnitFactory = {
+            getSortedOrganisationUnits : function(organisationUnits){
+                var data = [],defer = $q.defer();
+                organisationUnits.forEach(function(organisationUnit){
+                    data.push(organisationUnitFactory.sortingOrganisationUnit(organisationUnit));
+                });
+                defer.resolve(data);
+                return defer.promise;
+            },
+            sortingOrganisationUnit : function(organisationUnit){
+                if(organisationUnit.children) {
+                    organisationUnit.children = $filter('orderBy')(organisationUnit.children, 'name');
+                    organisationUnit.children.forEach(function (child,index) {
+                        organisationUnit.children[index]=organisationUnitFactory.sortingOrganisationUnit(child);
+                    });
+                }
+                return organisationUnit;
+            }
+
+        };
+
+        return organisationUnitFactory;
+
+    }])
 
     .service('BlankService', [function () {
 
     }]);
 
+function getSortedOrgUnit(orgUnits){
+    var data = [];
+    orgUnits.forEach(function(orgUnit){
+        data.push(sortingOrUnit(orgUnit));
+    });
+    return data;
+}
+
+//sorting all orgUnits and its children
+function sortingOrUnit(parentOrgUnit){
+    if(parentOrgUnit.children) {
+        parentOrgUnit.children = $filter('orderBy')(parentOrgUnit.children, 'name');
+        parentOrgUnit.children.forEach(function (child,index) {
+            parentOrgUnit.children[index]=sortingOrUnit(child);
+        });
+    }
+    return parentOrgUnit;
+}

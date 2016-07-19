@@ -10,5 +10,13 @@
         <div class="item item-body " id="eventCapture-list-item-container15">
             <p id="eventCapture-markdown24" style="margin-top:0px;color:#000000;font-size:16px;text-align:center;" class=" ">Event List to come</p>
         </div>
+
+        <div class="item item-body " ng-if = "data.isLoadingData" style="text-align: center;font-size: 14px;">
+            <three-bounce-spinner></three-bounce-spinner>
+        </div>
+        <div class="item item-body ">
+            <p>{{ data.sortedOrganisationUnits |json}}</p>
+        </div>
+
     </ion-content>
 </ion-view>

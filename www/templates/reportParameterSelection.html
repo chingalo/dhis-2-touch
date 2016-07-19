@@ -7,5 +7,14 @@
             <a ui-sref="tabsController.reportView" id="reportParameterSelection-button2" class=" button button-positive  button-block button-outline ">Generate Report</a>
         </div>
         <div id="reportParameterSelection-button-bar1" class=" button-bar "></div>
+
+        <div class="item item-body " ng-if = "data.isLoadingData" style="text-align: center;font-size: 14px;">
+            <three-bounce-spinner></three-bounce-spinner>
+        </div>
+        <div class="item item-body ">
+            <p>{{ data.sortedOrganisationUnits |json}}</p>
+        </div>
+
+
     </ion-content>
 </ion-view>
