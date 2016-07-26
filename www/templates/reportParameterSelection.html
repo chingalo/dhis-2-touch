@@ -2,7 +2,7 @@
     <ion-content padding="true" class="has-header">
         <div class="item item-body " id="reportParameterSelection-list-item-container4">
 
-            <div class="row" ng-click="modal.show()" style="padding-top: 1%;">
+            <div class="row" ng-click="organisationUnitsModal.show()" style="padding-top: 1%;">
                 <div class="col col-100">
                     <p ng-if ="data.selectedOrganisationUnit.id">
                         {{ data.selectedOrganisationUnit.name }}
@@ -14,7 +14,11 @@
             </div>
 
             <div class="spacer" style="width: 267.333px; height: 14px;"></div>
-            <p id="reportParameterSelection-markdown7" style="color:#000000;font-size:19px;text-align:center;" class=" ">Period selection</p>
+            <div class="row" ng-click="periodModal.show()" style="padding-top: 1%;">
+                <div class="col col-100">
+                    <p>Touch to select period</p>
+                </div>
+            </div>
             <a ui-sref="tabsController.reportView" id="reportParameterSelection-button2" class=" button button-positive  button-block button-outline ">Generate Report</a>
         </div>
         <div id="reportParameterSelection-button-bar1" class=" button-bar "></div>

@@ -71,10 +71,15 @@ angular.module('app.controllers', [])
 
     .controller('appsCtrl', function ($scope) {
 
+        $scope.onSwipeLeft = function(){
+            console.log('onSwipeLeft');
+        }
     })
 
     .controller('accountCtrl', function ($scope) {
-
+        $scope.onSwipeRight = function(){
+            console.log('onSwipeRight');
+        }
     })
 
     .controller('loginCtrl', function ($scope, appFactory, $q,
@@ -271,7 +276,7 @@ angular.module('app.controllers', [])
             });
             sqlLiteFactory.getDataFromTableByAttributes(resource, dataBaseStructure[resource].fields, "id", ids).then(function (assignedOrgUnits) {
                 organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
-                    $scope.data.sortedOrganisationUnits = sortedOrganisationUnits;
+                    $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
                     $scope.data.isLoadingData = false;
                 });
             }, function () {
@@ -280,30 +285,76 @@ angular.module('app.controllers', [])
             });
         }
 
-        $scope.setSelectedOrganisationUnit = function(){
+        /**
+         * getOrganisationUnitsArrayList
+         * @param organisationUnits
+         * @returns {Array}
+         */
+        function getOrganisationUnitsArrayList(organisationUnits){
+            var organisationUnitsArrayList = [];
+            organisationUnits.forEach( function(organisationUnit){
+                organisationUnitsArrayList.push({
+                    id : organisationUnit.id,
+                    name : organisationUnit.name,
+                    ancestors : organisationUnit.ancestors,
+                    dataSets : organisationUnit.dataSets,
+                    level : organisationUnit.level
+                });
+                if(organisationUnit.children){
+                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function(organisationUnitChild){
+                        organisationUnitsArrayList.push({
+                            id : organisationUnitChild.id,
+                            name : organisationUnitChild.name,
+                            ancestors : organisationUnitChild.ancestors,
+                            dataSets : organisationUnitChild.dataSets,
+                            level : organisationUnitChild.level
+                        });
+                    });
+                }
+            });
+            return organisationUnitsArrayList;
+        }
+
+        /**
+         * setSelectedOrganisationUnit
+         * @param sortedOrganisationUnit
+         */
+        $scope.setSelectedOrganisationUnit = function(sortedOrganisationUnit){
             $scope.data.selectedOrganisationUnit = {
-                id : "id",
-                name : "org unit name",
-                level : "level",
-                ancestors : [],
-                dataSets : []
+                id : sortedOrganisationUnit.id,
+                name : sortedOrganisationUnit.name,
+                level : sortedOrganisationUnit.level,
+                ancestors : sortedOrganisationUnit.ancestors,
+                dataSets : sortedOrganisationUnit.dataSets
             };
-            console.log($scope.data.selectedOrganisationUnit);
-            $scope.closeModal();
+
+            $scope.organisationUnitsModal.hide();
+            //loading data set list
+            loadDataSets();
         };
+
+        /**
+         * loadDataSets
+         */
+        function loadDataSets(){
+            var dataSetArray = [];
+            $scope.data.selectedOrganisationUnit.dataSets.forEach(function(dataSet){
+                dataSetArray.push(dataSet.id);
+            });
+            console.log('data set ids');
+            console.log(dataSetArray);
+        }
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
         }).then(function(modal) {
-            $scope.modal = modal;
+            $scope.organisationUnitsModal = modal;
         });
-
-        $scope.openModal = function() {
-            $scope.modal.show();
-        };
-        $scope.closeModal = function() {
-            $scope.modal.hide();
-        };
+        $ionicModal.fromTemplateUrl('templates/modal/periodSelectionModal.html', {
+            scope: $scope
+        }).then(function(modal) {
+            $scope.periodModal = modal;
+        });
     })
 
     .controller('profileCtrl', function ($scope, userFactory) {
@@ -498,7 +549,7 @@ angular.module('app.controllers', [])
             });
             sqlLiteFactory.getDataFromTableByAttributes(resource, dataBaseStructure[resource].fields, "id", ids).then(function (assignedOrgUnits) {
                 organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
-                    $scope.data.sortedOrganisationUnits = sortedOrganisationUnits;
+                    $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
                     $scope.data.isLoadingData = false;
                 });
             }, function () {
@@ -507,29 +558,59 @@ angular.module('app.controllers', [])
             });
         }
 
-        $scope.setSelectedOrganisationUnit = function(){
+        /**
+         * getOrganisationUnitsArrayList
+         * @param organisationUnits
+         * @returns {Array}
+         */
+        function getOrganisationUnitsArrayList(organisationUnits){
+            var organisationUnitsArrayList = [];
+            organisationUnits.forEach( function(organisationUnit){
+                organisationUnitsArrayList.push({
+                    id : organisationUnit.id,
+                    name : organisationUnit.name,
+                    ancestors : organisationUnit.ancestors,
+                    dataSets : organisationUnit.dataSets,
+                    level : organisationUnit.level
+                });
+                if(organisationUnit.children){
+                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function(organisationUnitChild){
+                        organisationUnitsArrayList.push({
+                            id : organisationUnitChild.id,
+                            name : organisationUnitChild.name,
+                            ancestors : organisationUnitChild.ancestors,
+                            dataSets : organisationUnitChild.dataSets,
+                            level : organisationUnitChild.level
+                        });
+                    });
+                }
+            });
+            return organisationUnitsArrayList;
+        }
+
+        /**
+         * setSelectedOrganisationUnit
+         * @param sortedOrganisationUnit
+         */
+        $scope.setSelectedOrganisationUnit = function(sortedOrganisationUnit){
             $scope.data.selectedOrganisationUnit = {
-                id : "id",
-                name : "org unit name",
-                level : "level",
-                ancestors : [],
-                dataSets : []
+                id : sortedOrganisationUnit.id,
+                name : sortedOrganisationUnit.name,
+                level : sortedOrganisationUnit.level,
+                ancestors : sortedOrganisationUnit.ancestors,
+                dataSets : sortedOrganisationUnit.dataSets
             };
-            $scope.closeModal();
+            var dataSetArray = [];
+            console.log($scope.data.selectedOrganisationUnit);
+            $scope.organisationUnitsModal.hide();
+            //loading data set list
         };
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
         }).then(function(modal) {
-            $scope.modal = modal;
+            $scope.organisationUnitsModal = modal;
         });
-
-        $scope.openModal = function() {
-            $scope.modal.show();
-        };
-        $scope.closeModal = function() {
-            $scope.modal.hide();
-        };
     })
 
     .controller('reportParameterSelectionCtrl', function ($scope, $localStorage,
@@ -558,7 +639,7 @@ angular.module('app.controllers', [])
             });
             sqlLiteFactory.getDataFromTableByAttributes(resource, dataBaseStructure[resource].fields, "id", ids).then(function (assignedOrgUnits) {
                 organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
-                    $scope.data.sortedOrganisationUnits = sortedOrganisationUnits;
+                    $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
                     $scope.data.isLoadingData = false;
                 });
             }, function () {
@@ -567,29 +648,62 @@ angular.module('app.controllers', [])
             });
         }
 
-        $scope.setSelectedOrganisationUnit = function(){
+        /**
+         * getOrganisationUnitsArrayList
+         * @param organisationUnits
+         * @returns {Array}
+         */
+        function getOrganisationUnitsArrayList(organisationUnits){
+            var organisationUnitsArrayList = [];
+            organisationUnits.forEach( function(organisationUnit){
+                organisationUnitsArrayList.push({
+                    id : organisationUnit.id,
+                    name : organisationUnit.name,
+                    ancestors : organisationUnit.ancestors,
+                    dataSets : organisationUnit.dataSets,
+                    level : organisationUnit.level
+                });
+                if(organisationUnit.children){
+                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function(organisationUnitChild){
+                        organisationUnitsArrayList.push({
+                            id : organisationUnitChild.id,
+                            name : organisationUnitChild.name,
+                            ancestors : organisationUnitChild.ancestors,
+                            dataSets : organisationUnitChild.dataSets,
+                            level : organisationUnitChild.level
+                        });
+                    });
+                }
+            });
+            return organisationUnitsArrayList;
+        }
+
+        /**
+         * setSelectedOrganisationUnit
+         * @param sortedOrganisationUnit
+         */
+        $scope.setSelectedOrganisationUnit = function(sortedOrganisationUnit){
             $scope.data.selectedOrganisationUnit = {
-                id : "id",
-                name : "org unit name",
-                level : "level",
-                ancestors : [],
-                dataSets : []
+                id : sortedOrganisationUnit.id,
+                name : sortedOrganisationUnit.name,
+                level : sortedOrganisationUnit.level,
+                ancestors : sortedOrganisationUnit.ancestors,
+                dataSets : sortedOrganisationUnit.dataSets
             };
-            $scope.closeModal();
+            console.log($scope.data.selectedOrganisationUnit);
+            $scope.organisationUnitsModal.hide();
         };
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
         }).then(function(modal) {
-            $scope.modal = modal;
+            $scope.organisationUnitsModal = modal;
         });
-
-        $scope.openModal = function() {
-            $scope.modal.show();
-        };
-        $scope.closeModal = function() {
-            $scope.modal.hide();
-        };
+        $ionicModal.fromTemplateUrl('templates/modal/periodSelectionModal.html', {
+            scope: $scope
+        }).then(function(modal) {
+            $scope.periodModal = modal;
+        });
     })
 
     .controller('reportViewCtrl', function ($scope) {

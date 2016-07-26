@@ -1,14 +1,31 @@
 <ion-modal-view>
-    <ion-header-bar>
+    <ion-header-bar class="bar-positive">
         <h1 class="title" >
             <h1 class="title">Organisation Unit selection</h1>
         </h1>
         <div class="buttons">
-            <button class="button button-clear" ng-click="modal.hide()">Close</button>
+            <button class="button button-clear" ng-click="organisationUnitsModal.hide()">Close</button>
         </div>
     </ion-header-bar>
     <ion-content>
-        <button ng-click="setSelectedOrganisationUnit()">select</button>
-        <p>{{ data.sortedOrganisationUnits |json}}</p>
+
+        <div class="row">
+            <div class="col col-100">
+                <label class="item item-input">
+                    <i class="icon ion-ios-search-strong placeholder-icon"></i>
+                    <input ng-model="search" type="search" placeholder="Search Organisation Unit ">
+                </label>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col col-100">
+                <ion-list>
+                    <ion-item ng-repeat=" sortedOrganisationUnit in data.sortedOrganisationUnits|filter: {name  :search}"  ng-click="setSelectedOrganisationUnit(sortedOrganisationUnit)">
+                        {{ sortedOrganisationUnit.name }}
+                    </ion-item>
+                </ion-list>
+            </div>
+        </div>
     </ion-content>
 </ion-modal-view>
