@@ -244,12 +244,15 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryCtrl', function ($scope, $localStorage, sqlLiteFactory, organisationUnitFactory) {
+    .controller('dataEntryCtrl', function ($scope, $localStorage,
+                                           $ionicModal,
+                                           sqlLiteFactory, organisationUnitFactory) {
 
         //object for data entry selection screen
         $scope.data = {
             isLoadingData: false,
-            sortedOrganisationUnits: []
+            sortedOrganisationUnits: [],
+            selectedOrganisationUnit : {}
         };
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
@@ -276,6 +279,31 @@ angular.module('app.controllers', [])
                 Notation('Fail to get assigned organisation units for local storage ');
             });
         }
+
+        $scope.setSelectedOrganisationUnit = function(){
+            $scope.data.selectedOrganisationUnit = {
+                id : "id",
+                name : "org unit name",
+                level : "level",
+                ancestors : [],
+                dataSets : []
+            };
+            console.log($scope.data.selectedOrganisationUnit);
+            $scope.closeModal();
+        };
+
+        $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
+            scope: $scope
+        }).then(function(modal) {
+            $scope.modal = modal;
+        });
+
+        $scope.openModal = function() {
+            $scope.modal.show();
+        };
+        $scope.closeModal = function() {
+            $scope.modal.hide();
+        };
     })
 
     .controller('profileCtrl', function ($scope, userFactory) {
@@ -444,11 +472,14 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('eventCaptureCtrl', function ($scope, $localStorage, sqlLiteFactory, organisationUnitFactory) {
-        //object for data entry selection screen
+    .controller('eventCaptureCtrl', function ($scope, $localStorage, sqlLiteFactory,
+                                              $ionicModal,
+                                              organisationUnitFactory) {
+        //object for event capture selection screen
         $scope.data = {
             isLoadingData: false,
-            sortedOrganisationUnits: []
+            sortedOrganisationUnits: [],
+            selectedOrganisationUnit : {}
         };
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
@@ -475,13 +506,40 @@ angular.module('app.controllers', [])
                 Notation('Fail to get assigned organisation units for local storage ');
             });
         }
+
+        $scope.setSelectedOrganisationUnit = function(){
+            $scope.data.selectedOrganisationUnit = {
+                id : "id",
+                name : "org unit name",
+                level : "level",
+                ancestors : [],
+                dataSets : []
+            };
+            $scope.closeModal();
+        };
+
+        $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
+            scope: $scope
+        }).then(function(modal) {
+            $scope.modal = modal;
+        });
+
+        $scope.openModal = function() {
+            $scope.modal.show();
+        };
+        $scope.closeModal = function() {
+            $scope.modal.hide();
+        };
     })
 
-    .controller('reportParameterSelectionCtrl', function ($scope, $localStorage, sqlLiteFactory, organisationUnitFactory) {
+    .controller('reportParameterSelectionCtrl', function ($scope, $localStorage,
+                                                          $ionicModal,
+                                                          sqlLiteFactory, organisationUnitFactory) {
         //object for data entry selection screen
         $scope.data = {
             isLoadingData: false,
-            sortedOrganisationUnits: []
+            sortedOrganisationUnits: [],
+            selectedOrganisationUnit : {}
         };
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
@@ -508,6 +566,30 @@ angular.module('app.controllers', [])
                 Notation('Fail to get assigned organisation units for local storage ');
             });
         }
+
+        $scope.setSelectedOrganisationUnit = function(){
+            $scope.data.selectedOrganisationUnit = {
+                id : "id",
+                name : "org unit name",
+                level : "level",
+                ancestors : [],
+                dataSets : []
+            };
+            $scope.closeModal();
+        };
+
+        $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
+            scope: $scope
+        }).then(function(modal) {
+            $scope.modal = modal;
+        });
+
+        $scope.openModal = function() {
+            $scope.modal.show();
+        };
+        $scope.closeModal = function() {
+            $scope.modal.hide();
+        };
     })
 
     .controller('reportViewCtrl', function ($scope) {

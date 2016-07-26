@@ -1,0 +1,14 @@
+<ion-modal-view>
+    <ion-header-bar>
+        <h1 class="title" >
+            <h1 class="title">Organisation Unit selection</h1>
+        </h1>
+        <div class="buttons">
+            <button class="button button-clear" ng-click="modal.hide()">Close</button>
+        </div>
+    </ion-header-bar>
+    <ion-content>
+        <button ng-click="setSelectedOrganisationUnit()">select</button>
+        <p>{{ data.sortedOrganisationUnits |json}}</p>
+    </ion-content>
+</ion-modal-view>

@@ -1,7 +1,17 @@
 <ion-view title="Data Entry " id="page6" style="background-color:#F5F5F5;" class=" ">
     <ion-content padding="true" class="has-header">
         <div class="item item-body " id="dataEntry-list-item-container12">
-            <p id="dataEntry-markdown17" style="margin-top:0px;color:#000000;font-size:19px;text-align:center;" class=" ">Tree selection to come</p>
+            <div class="row" ng-click="modal.show()" style="padding-top: 1%;">
+                <div class="col col-100">
+                    <p ng-if ="data.selectedOrganisationUnit.id">
+                        {{ data.selectedOrganisationUnit.name }}
+                    </p>
+                    <p ng-if ="!data.selectedOrganisationUnit.id">
+                        Touch to select Organisation Unit
+                    </p>
+                </div>
+            </div>
+
             <div class="spacer" style="width: 267.312px; height: 12px;"></div>
             <p id="dataEntry-markdown18" style="color:#000000;font-size:19px;text-align:center;" class=" ">Form selection to come</p>
             <div class="spacer" style="width: 267.333px; height: 13px;"></div>
@@ -15,9 +25,5 @@
         <div class="item item-body " ng-if = "data.isLoadingData" style="text-align: center;font-size: 14px;">
             <three-bounce-spinner></three-bounce-spinner>
         </div>
-        <div class="item item-body ">
-            <p>{{ data.sortedOrganisationUnits |json}}</p>
-        </div>
-
     </ion-content>
 </ion-view>

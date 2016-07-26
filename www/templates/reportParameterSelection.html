@@ -1,7 +1,18 @@
 <ion-view title="Report Parameter Selection" id="page15" style="background-color:#F5F5F5;" class=" ">
     <ion-content padding="true" class="has-header">
         <div class="item item-body " id="reportParameterSelection-list-item-container4">
-            <p id="reportParameterSelection-markdown6" style="color:#000000;font-size:19px;text-align:center;" class=" ">Tree selections to come</p>
+
+            <div class="row" ng-click="modal.show()" style="padding-top: 1%;">
+                <div class="col col-100">
+                    <p ng-if ="data.selectedOrganisationUnit.id">
+                        {{ data.selectedOrganisationUnit.name }}
+                    </p>
+                    <p ng-if ="!data.selectedOrganisationUnit.id">
+                        Touch to select Organisation Unit
+                    </p>
+                </div>
+            </div>
+
             <div class="spacer" style="width: 267.333px; height: 14px;"></div>
             <p id="reportParameterSelection-markdown7" style="color:#000000;font-size:19px;text-align:center;" class=" ">Period selection</p>
             <a ui-sref="tabsController.reportView" id="reportParameterSelection-button2" class=" button button-positive  button-block button-outline ">Generate Report</a>
@@ -11,10 +22,6 @@
         <div class="item item-body " ng-if = "data.isLoadingData" style="text-align: center;font-size: 14px;">
             <three-bounce-spinner></three-bounce-spinner>
         </div>
-        <div class="item item-body ">
-            <p>{{ data.sortedOrganisationUnits |json}}</p>
-        </div>
-
 
     </ion-content>
 </ion-view>
