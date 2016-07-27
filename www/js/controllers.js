@@ -71,13 +71,13 @@ angular.module('app.controllers', [])
 
     .controller('appsCtrl', function ($scope) {
 
-        $scope.onSwipeLeft = function(){
+        $scope.onSwipeLeft = function () {
             console.log('onSwipeLeft');
         }
     })
 
     .controller('accountCtrl', function ($scope) {
-        $scope.onSwipeRight = function(){
+        $scope.onSwipeRight = function () {
             console.log('onSwipeRight');
         }
     })
@@ -225,7 +225,7 @@ angular.module('app.controllers', [])
 
         }
 
-        function downloadingDataSets(){
+        function downloadingDataSets() {
             var resource = "dataSets";
             var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,displayName,categoryOptionCombos[id,name]]";
             systemFactory.downloadMetadata(resource, null, fields).then(function (dataSets) {
@@ -250,12 +250,12 @@ angular.module('app.controllers', [])
             })
         }
 
-        function downloadingDataSetSections(){
+        function downloadingDataSetSections() {
             var resource = "sections";
             var fields = "id,name,indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],dataElements[id,name,formName,attributeValues[value,attribute[name]],categoryCombo[id,name,categoryOptionCombos[id,name]],displayName,description,valueType,optionSet[name,options[name,id,code]]";
             systemFactory.downloadMetadata(resource, null, fields).then(function (sections) {
                 //success on downloading
-                console.log('sections::'+sections[resource].length);
+                console.log('sections::' + sections[resource].length);
                 var promises = [];
                 sections[resource].forEach(function (data) {
                     promises.push(
@@ -302,15 +302,33 @@ angular.module('app.controllers', [])
     })
 
     .controller('dataEntryCtrl', function ($scope, $localStorage,
-                                           $ionicModal,
+                                           $ionicModal, userFactory,$ionicLoading,
                                            sqlLiteFactory, organisationUnitFactory) {
 
         //object for data entry selection screen
         $scope.data = {
-            isLoadingData: false,
             sortedOrganisationUnits: [],
-            selectedOrganisationUnit : {}
+            selectedOrganisationUnit: {},
+            assignedDataSetForms: [],
+            selectedDataSetForm: {}
         };
+
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message){
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage(){
+            $ionicLoading.hide();
+        }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
             getUserAssignedOrgUnits();
@@ -320,20 +338,23 @@ angular.module('app.controllers', [])
          * getUserAssignedOrgUnits
          */
         function getUserAssignedOrgUnits() {
-            $scope.data.isLoadingData = true;
-            var resource = "organisationUnits", dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+            setProgressMessage('Loading Organisation Units');
+            var resource = "organisationUnits";
             var ids = [];
-            $localStorage.app.userData.organisationUnits.forEach(function (organisationUnit) {
-                ids.push(organisationUnit.id);
-            });
-            sqlLiteFactory.getDataFromTableByAttributes(resource, dataBaseStructure[resource].fields, "id", ids).then(function (assignedOrgUnits) {
-                organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
-                    $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
-                    $scope.data.isLoadingData = false;
+            userFactory.getCurrentLoginUserUserdata().then(function (userData) {
+                userData.organisationUnits.forEach(function (organisationUnit) {
+                    ids.push(organisationUnit.id);
+                });
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
+                    organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
+                        $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
+                        hideProgressMessage();
+                    });
+                }, function () {
+                    //fail to get org units from local storage
+                    Notation('Fail to get assigned organisation units from local storage ');
                 });
             }, function () {
-                //fail to get org units from local storage
-                Notation('Fail to get assigned organisation units for local storage ');
             });
         }
 
@@ -342,24 +363,24 @@ angular.module('app.controllers', [])
          * @param organisationUnits
          * @returns {Array}
          */
-        function getOrganisationUnitsArrayList(organisationUnits){
+        function getOrganisationUnitsArrayList(organisationUnits) {
             var organisationUnitsArrayList = [];
-            organisationUnits.forEach( function(organisationUnit){
+            organisationUnits.forEach(function (organisationUnit) {
                 organisationUnitsArrayList.push({
-                    id : organisationUnit.id,
-                    name : organisationUnit.name,
-                    ancestors : organisationUnit.ancestors,
-                    dataSets : organisationUnit.dataSets,
-                    level : organisationUnit.level
+                    id: organisationUnit.id,
+                    name: organisationUnit.name,
+                    ancestors: organisationUnit.ancestors,
+                    dataSets: organisationUnit.dataSets,
+                    level: organisationUnit.level
                 });
-                if(organisationUnit.children){
-                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function(organisationUnitChild){
+                if (organisationUnit.children) {
+                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
                         organisationUnitsArrayList.push({
-                            id : organisationUnitChild.id,
-                            name : organisationUnitChild.name,
-                            ancestors : organisationUnitChild.ancestors,
-                            dataSets : organisationUnitChild.dataSets,
-                            level : organisationUnitChild.level
+                            id: organisationUnitChild.id,
+                            name: organisationUnitChild.name,
+                            ancestors: organisationUnitChild.ancestors,
+                            dataSets: organisationUnitChild.dataSets,
+                            level: organisationUnitChild.level
                         });
                     });
                 }
@@ -369,17 +390,20 @@ angular.module('app.controllers', [])
 
         /**
          * setSelectedOrganisationUnit
-         * @param sortedOrganisationUnit
+         * @param selectedOrganisationUnit
          */
-        $scope.setSelectedOrganisationUnit = function(sortedOrganisationUnit){
+        $scope.setSelectedOrganisationUnit = function (selectedOrganisationUnit) {
             $scope.data.selectedOrganisationUnit = {
-                id : sortedOrganisationUnit.id,
-                name : sortedOrganisationUnit.name,
-                level : sortedOrganisationUnit.level,
-                ancestors : sortedOrganisationUnit.ancestors,
-                dataSets : sortedOrganisationUnit.dataSets
+                id: selectedOrganisationUnit.id,
+                name: selectedOrganisationUnit.name,
+                level: selectedOrganisationUnit.level,
+                ancestors: selectedOrganisationUnit.ancestors,
+                dataSets: selectedOrganisationUnit.dataSets
             };
 
+            //reset forms array as well as selected form if any
+            $scope.data.assignedDataSetForms = [];
+            $scope.data.selectedDataSetForm = {};
             $scope.organisationUnitsModal.hide();
             //loading data set list
             loadDataSets();
@@ -388,25 +412,64 @@ angular.module('app.controllers', [])
         /**
          * loadDataSets
          */
-        function loadDataSets(){
-            var dataSetArray = [];
-            $scope.data.selectedOrganisationUnit.dataSets.forEach(function(dataSet){
-                dataSetArray.push(dataSet.id);
+        function loadDataSets() {
+            setProgressMessage('Loading data sets');
+            var assignedDataSetFormIds = [];
+            var assignedDataSetFormIdsByUserRole = [];
+            var resource = "dataSets";
+            userFactory.getCurrentLoginUserUserdata().then(function (userData) {
+                userData.userRoles.forEach(function (userRole) {
+                    if (userRole.dataSets) {
+                        userRole.dataSets.forEach(function (dataSet) {
+                            assignedDataSetFormIdsByUserRole.push(dataSet.id);
+                        });
+                    }
+                });
+                //filter data set ids based on role and organisation unit assignment
+                $scope.data.selectedOrganisationUnit.dataSets.forEach(function (dataSet) {
+                    if (assignedDataSetFormIdsByUserRole.indexOf(dataSet.id) != -1) {
+                        assignedDataSetFormIds.push(dataSet.id);
+                    }
+                });
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", assignedDataSetFormIds).then(function (dataSets) {
+                    $scope.data.assignedDataSetForms = dataSets;
+                    console.log('dataSets');
+                    console.log(dataSets.length);
+                    console.log(dataSets);
+                    assignedDataSetFormIdsByUserRole = null;
+                    resource = null;
+                    hideProgressMessage();
+                }, function () {
+                    //fail to get org units from local storage
+                    Notation('Fail to get assigned data sets from local storage ');
+                });
+            }, function () {
             });
-            console.log('data set ids');
-            console.log(dataSetArray);
+
         }
+
+
+        $scope.setSelectedDataSetForm = function (selectedDataSetForm) {
+            $scope.data.selectedDataSetForm = selectedDataSetForm;
+            $scope.dataEntryFormModal.hide();
+        };
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
-        }).then(function(modal) {
+        }).then(function (modal) {
             $scope.organisationUnitsModal = modal;
+        });
+        $ionicModal.fromTemplateUrl('templates/modal/dataEntryFormModal.html', {
+            scope: $scope
+        }).then(function (modal) {
+            $scope.dataEntryFormModal = modal;
         });
         $ionicModal.fromTemplateUrl('templates/modal/periodSelectionModal.html', {
             scope: $scope
-        }).then(function(modal) {
+        }).then(function (modal) {
             $scope.periodModal = modal;
         });
+
     })
 
     .controller('profileCtrl', function ($scope, userFactory) {
@@ -465,7 +528,7 @@ angular.module('app.controllers', [])
             userRoles.forEach(function (userRole) {
                 if (userRole.dataSets) {
                     userRole.dataSets.forEach(function (dataSet) {
-                        if (shouldAddFormIntoAssigenedFormList(assignedFormsList, dataSet)) {
+                        if (shouldAddFormIntoAssignedFormList(assignedFormsList, dataSet)) {
                             assignedFormsList.push(dataSet);
                         }
                     })
@@ -480,7 +543,7 @@ angular.module('app.controllers', [])
          * @param form
          * @returns {boolean}
          */
-        function shouldAddFormIntoAssigenedFormList(assignedFormsList, form) {
+        function shouldAddFormIntoAssignedFormList(assignedFormsList, form) {
             var shouldAdd = true;
             assignedFormsList.forEach(function (assignedForm) {
                 if (assignedForm.id == form.id) {
@@ -582,7 +645,7 @@ angular.module('app.controllers', [])
         $scope.data = {
             isLoadingData: false,
             sortedOrganisationUnits: [],
-            selectedOrganisationUnit : {}
+            selectedOrganisationUnit: {}
         };
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
@@ -594,19 +657,19 @@ angular.module('app.controllers', [])
          */
         function getUserAssignedOrgUnits() {
             $scope.data.isLoadingData = true;
-            var resource = "organisationUnits", dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+            var resource = "organisationUnits";
             var ids = [];
             $localStorage.app.userData.organisationUnits.forEach(function (organisationUnit) {
                 ids.push(organisationUnit.id);
             });
-            sqlLiteFactory.getDataFromTableByAttributes(resource, dataBaseStructure[resource].fields, "id", ids).then(function (assignedOrgUnits) {
+            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
                 organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
                     $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
                     $scope.data.isLoadingData = false;
                 });
             }, function () {
                 //fail to get org units from local storage
-                Notation('Fail to get assigned organisation units for local storage ');
+                Notation('Fail to get assigned organisation units from local storage ');
             });
         }
 
@@ -615,24 +678,24 @@ angular.module('app.controllers', [])
          * @param organisationUnits
          * @returns {Array}
          */
-        function getOrganisationUnitsArrayList(organisationUnits){
+        function getOrganisationUnitsArrayList(organisationUnits) {
             var organisationUnitsArrayList = [];
-            organisationUnits.forEach( function(organisationUnit){
+            organisationUnits.forEach(function (organisationUnit) {
                 organisationUnitsArrayList.push({
-                    id : organisationUnit.id,
-                    name : organisationUnit.name,
-                    ancestors : organisationUnit.ancestors,
-                    dataSets : organisationUnit.dataSets,
-                    level : organisationUnit.level
+                    id: organisationUnit.id,
+                    name: organisationUnit.name,
+                    ancestors: organisationUnit.ancestors,
+                    dataSets: organisationUnit.dataSets,
+                    level: organisationUnit.level
                 });
-                if(organisationUnit.children){
-                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function(organisationUnitChild){
+                if (organisationUnit.children) {
+                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
                         organisationUnitsArrayList.push({
-                            id : organisationUnitChild.id,
-                            name : organisationUnitChild.name,
-                            ancestors : organisationUnitChild.ancestors,
-                            dataSets : organisationUnitChild.dataSets,
-                            level : organisationUnitChild.level
+                            id: organisationUnitChild.id,
+                            name: organisationUnitChild.name,
+                            ancestors: organisationUnitChild.ancestors,
+                            dataSets: organisationUnitChild.dataSets,
+                            level: organisationUnitChild.level
                         });
                     });
                 }
@@ -644,13 +707,13 @@ angular.module('app.controllers', [])
          * setSelectedOrganisationUnit
          * @param sortedOrganisationUnit
          */
-        $scope.setSelectedOrganisationUnit = function(sortedOrganisationUnit){
+        $scope.setSelectedOrganisationUnit = function (sortedOrganisationUnit) {
             $scope.data.selectedOrganisationUnit = {
-                id : sortedOrganisationUnit.id,
-                name : sortedOrganisationUnit.name,
-                level : sortedOrganisationUnit.level,
-                ancestors : sortedOrganisationUnit.ancestors,
-                dataSets : sortedOrganisationUnit.dataSets
+                id: sortedOrganisationUnit.id,
+                name: sortedOrganisationUnit.name,
+                level: sortedOrganisationUnit.level,
+                ancestors: sortedOrganisationUnit.ancestors,
+                dataSets: sortedOrganisationUnit.dataSets
             };
             var dataSetArray = [];
             console.log($scope.data.selectedOrganisationUnit);
@@ -660,7 +723,7 @@ angular.module('app.controllers', [])
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
-        }).then(function(modal) {
+        }).then(function (modal) {
             $scope.organisationUnitsModal = modal;
         });
     })
@@ -672,7 +735,7 @@ angular.module('app.controllers', [])
         $scope.data = {
             isLoadingData: false,
             sortedOrganisationUnits: [],
-            selectedOrganisationUnit : {}
+            selectedOrganisationUnit: {}
         };
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
@@ -684,19 +747,19 @@ angular.module('app.controllers', [])
          */
         function getUserAssignedOrgUnits() {
             $scope.data.isLoadingData = true;
-            var resource = "organisationUnits", dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+            var resource = "organisationUnits";
             var ids = [];
             $localStorage.app.userData.organisationUnits.forEach(function (organisationUnit) {
                 ids.push(organisationUnit.id);
             });
-            sqlLiteFactory.getDataFromTableByAttributes(resource, dataBaseStructure[resource].fields, "id", ids).then(function (assignedOrgUnits) {
+            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
                 organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
                     $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
                     $scope.data.isLoadingData = false;
                 });
             }, function () {
                 //fail to get org units from local storage
-                Notation('Fail to get assigned organisation units for local storage ');
+                Notation('Fail to get assigned organisation units from local storage ');
             });
         }
 
@@ -705,24 +768,24 @@ angular.module('app.controllers', [])
          * @param organisationUnits
          * @returns {Array}
          */
-        function getOrganisationUnitsArrayList(organisationUnits){
+        function getOrganisationUnitsArrayList(organisationUnits) {
             var organisationUnitsArrayList = [];
-            organisationUnits.forEach( function(organisationUnit){
+            organisationUnits.forEach(function (organisationUnit) {
                 organisationUnitsArrayList.push({
-                    id : organisationUnit.id,
-                    name : organisationUnit.name,
-                    ancestors : organisationUnit.ancestors,
-                    dataSets : organisationUnit.dataSets,
-                    level : organisationUnit.level
+                    id: organisationUnit.id,
+                    name: organisationUnit.name,
+                    ancestors: organisationUnit.ancestors,
+                    dataSets: organisationUnit.dataSets,
+                    level: organisationUnit.level
                 });
-                if(organisationUnit.children){
-                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function(organisationUnitChild){
+                if (organisationUnit.children) {
+                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
                         organisationUnitsArrayList.push({
-                            id : organisationUnitChild.id,
-                            name : organisationUnitChild.name,
-                            ancestors : organisationUnitChild.ancestors,
-                            dataSets : organisationUnitChild.dataSets,
-                            level : organisationUnitChild.level
+                            id: organisationUnitChild.id,
+                            name: organisationUnitChild.name,
+                            ancestors: organisationUnitChild.ancestors,
+                            dataSets: organisationUnitChild.dataSets,
+                            level: organisationUnitChild.level
                         });
                     });
                 }
@@ -734,13 +797,13 @@ angular.module('app.controllers', [])
          * setSelectedOrganisationUnit
          * @param sortedOrganisationUnit
          */
-        $scope.setSelectedOrganisationUnit = function(sortedOrganisationUnit){
+        $scope.setSelectedOrganisationUnit = function (sortedOrganisationUnit) {
             $scope.data.selectedOrganisationUnit = {
-                id : sortedOrganisationUnit.id,
-                name : sortedOrganisationUnit.name,
-                level : sortedOrganisationUnit.level,
-                ancestors : sortedOrganisationUnit.ancestors,
-                dataSets : sortedOrganisationUnit.dataSets
+                id: sortedOrganisationUnit.id,
+                name: sortedOrganisationUnit.name,
+                level: sortedOrganisationUnit.level,
+                ancestors: sortedOrganisationUnit.ancestors,
+                dataSets: sortedOrganisationUnit.dataSets
             };
             console.log($scope.data.selectedOrganisationUnit);
             $scope.organisationUnitsModal.hide();
@@ -748,12 +811,12 @@ angular.module('app.controllers', [])
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
-        }).then(function(modal) {
+        }).then(function (modal) {
             $scope.organisationUnitsModal = modal;
         });
         $ionicModal.fromTemplateUrl('templates/modal/periodSelectionModal.html', {
             scope: $scope
-        }).then(function(modal) {
+        }).then(function (modal) {
             $scope.periodModal = modal;
         });
     })

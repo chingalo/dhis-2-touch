@@ -294,7 +294,7 @@ angular.module('app.services', [])
             },
             insertDataOnTable : function(tableName,fieldsValues){
                 var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
-                fields = dataBaseStructure[tableName].fields;
+                var fields = dataBaseStructure[tableName].fields;
                 var dataColumns = "", questionMarks = "", values = [], defer = $q.defer(),databaseName = $localStorage.app.baseBaseName;
                 fields.forEach(function (field, index) {
                     var dataColumn = field.value;
@@ -337,7 +337,9 @@ angular.module('app.services', [])
                 }
                 return defer.promise;
             },
-            getDataFromTableByAttributes : function(tableName,fields,attribute,attributesValuesArray){
+            getDataFromTableByAttributes : function(tableName,attribute,attributesValuesArray){
+                var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+                var fields = dataBaseStructure[tableName].fields;
                 var db = null,values = [], defer = $q.defer(),databaseName = $localStorage.app.baseBaseName,query = "";
                 query +="SELECT * FROM " +tableName+" WHERE "+attribute+" IN (";
                 var inClauseValues = "";

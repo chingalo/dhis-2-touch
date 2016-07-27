@@ -9,20 +9,6 @@
     </author>
   <content src="index.html"/>
 
-
-  <!--<gap:plugin name="org.apache.cordova.battery-status" source="pgb"/>-->
-  <!--<gap:plugin name="org.apache.cordova.network-information" source="pgb"/>-->
-  <!--<gap:plugin name="org.apache.cordova.device" source = "pgb"/>-->
-  <!--<gap:plugin name="org.apache.cordova.device-motion" source = "pgb"/>-->
-  <!--<gap:plugin name="org.apache.cordova.device-orientation" source = "pgb"/>-->
-  <!--<gap:plugin name="org.apache.cordova.geolocation" source = "pgb"/>-->
-  <!--<gap:plugin name="org.apache.cordova.inappbrowser" source = "pgb"/>-->
-  <!--<gap:plugin name="org.apache.cordova.media" source = "pgb"/>-->
-  <!--<gap:plugin name="cordova-plugin-whitelist" source="npm" version="~1"/>-->
-
-
-
-
   <preference name="webviewbounce" value="false"/>
   <preference name="UIWebViewBounce" value="false"/>
   <preference name="DisallowOverscroll" value="true"/>
@@ -31,6 +17,7 @@
   <preference name="BackupWebStorage" value="none"/>
   <preference name="loadUrlTimeoutValue" value="700000"/>
   <preference name="SplashScreenDelay" value="10000"/>
+  <preference name="ShowSplashScreenSpinner" value="false" />
 
   <feature name="StatusBar">
     <param name="ios-package" value="CDVStatusBar" onload="true"/>
