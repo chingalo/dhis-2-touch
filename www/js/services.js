@@ -292,7 +292,9 @@ angular.module('app.services', [])
                 defer.resolve();
                 return defer.promise;
             },
-            insertDataOnTable : function(tableName,fields,fieldsValues){
+            insertDataOnTable : function(tableName,fieldsValues){
+                var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+                fields = dataBaseStructure[tableName].fields;
                 var dataColumns = "", questionMarks = "", values = [], defer = $q.defer(),databaseName = $localStorage.app.baseBaseName;
                 fields.forEach(function (field, index) {
                     var dataColumn = field.value;

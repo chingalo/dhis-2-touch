@@ -133,8 +133,9 @@ angular.module('app.controllers', [])
                                     angular.forEach(sqlLiteFactory.getDataBaseStructure(), function (table, tableName) {
                                         promises.push(
                                             sqlLiteFactory.createTable(tableName, table.fields).then(function () {
-
+                                                console.log('create table :: ' + tableName);
                                             }, function () {
+                                                console.log('fail create table :: ' + tableName);
                                             })
                                         );
                                     });
@@ -204,14 +205,13 @@ angular.module('app.controllers', [])
                     var promises = [];
                     organisationUnitsData.forEach(function (data) {
                         promises.push(
-                            sqlLiteFactory.insertDataOnTable(resource, dataBaseStructure[resource].fields, data).then(function () {
+                            sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
                             }, function () {
                             })
                         );
                     });
                     $q.all(promises).then(function () {
-                        $localStorage.app.user.isLogin = true;
-                        $state.go('tabsController.apps', {}, {});
+                        downloadingDataSets();
                     }, function () {
                         Notification('Fail to save assigned organisation units data');
                     });
@@ -222,6 +222,58 @@ angular.module('app.controllers', [])
             } else {
                 Notification('You have not been assigned to any organisation Units');
             }
+
+        }
+
+        function downloadingDataSets(){
+            var resource = "dataSets";
+            var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,displayName,categoryOptionCombos[id,name]]";
+            systemFactory.downloadMetadata(resource, null, fields).then(function (dataSets) {
+                //success on downloading
+                console.log('datasets ::' + dataSets[resource].length);
+                var promises = [];
+                dataSets[resource].forEach(function (data) {
+                    promises.push(
+                        sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                        }, function () {
+                        })
+                    );
+                });
+                $q.all(promises).then(function () {
+                    downloadingDataSetSections();
+                }, function () {
+                    Notification('Fail to save data sets data');
+                });
+            }, function () {
+                //error on downloading
+                Notification('Fail to download data sets');
+            })
+        }
+
+        function downloadingDataSetSections(){
+            var resource = "sections";
+            var fields = "id,name,indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],dataElements[id,name,formName,attributeValues[value,attribute[name]],categoryCombo[id,name,categoryOptionCombos[id,name]],displayName,description,valueType,optionSet[name,options[name,id,code]]";
+            systemFactory.downloadMetadata(resource, null, fields).then(function (sections) {
+                //success on downloading
+                console.log('sections::'+sections[resource].length);
+                var promises = [];
+                sections[resource].forEach(function (data) {
+                    promises.push(
+                        sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                        }, function () {
+                        })
+                    );
+                });
+                $q.all(promises).then(function () {
+                    $localStorage.app.user.isLogin = true;
+                    $state.go('tabsController.apps', {}, {});
+                }, function () {
+                    Notification('Fail to save sections data');
+                });
+            }, function () {
+                //error on downloading
+                Notification('Fail to download ' + resource);
+            })
 
         }
 
