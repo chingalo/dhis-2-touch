@@ -210,6 +210,30 @@ angular.module('app.services', [])
                     {value: 'level', type: 'TEXT'},
                     {value: 'children', type: 'LONGTEXT'}
                 ]
+            },
+            dataSets: {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'name', type: 'TEXT'},
+                    {value: 'timelyDays', type: 'TEXT'},
+                    {value: 'formType', type: 'TEXT'},
+                    {value: 'periodType', type: 'TEXT'},
+                    {value: 'openFuturePeriods', type: 'TEXT'},
+                    {value: 'expiryDays', type: 'TEXT'},
+                    {value: 'dataElements', type: 'LONGTEXT'},
+                    {value: 'organisationUnits', type: 'LONGTEXT'},
+                    {value: 'sections', type: 'LONGTEXT'},
+                    {value: 'indicators', type: 'LONGTEXT'},
+                    {value: 'categoryCombo', type: 'LONGTEXT'}
+                ]
+            },
+            sections: {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'name', type: 'TEXT'},
+                    {value: 'indicators', type: 'LONGTEXT'},
+                    {value: 'dataElements', type: 'LONGTEXT'}
+                ]
             }
         };
 
