@@ -84,7 +84,7 @@ angular.module('app.controllers', [])
         }
     })
 
-    .controller('loginCtrl', function ($scope, appFactory, $q,
+    .controller('loginCtrl', function ($scope, appFactory, $q,$ionicLoading,
                                        userFactory, Notification, systemFactory,
                                        $localStorage, sqlLiteFactory,
                                        $state) {
@@ -97,12 +97,31 @@ angular.module('app.controllers', [])
             $scope.data.baseUrl = $localStorage.app.baseUrl;
         }
 
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message) {
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage() {
+            $ionicLoading.hide();
+        }
+
         reAuthenticatedCurrentUser();
         //@todo re-open database and checking of completed download all data
         function reAuthenticatedCurrentUser() {
+            setProgressMessage('Please waiting');
             userFactory.getCurrentLoginUser().then(function (user) {
                 if (user.isLogin) {
                     appFactory.setAuthorizationOnHeader(user).then(function () {
+                        hideProgressMessage();
                         $state.go('tabsController.apps', {}, {});
                     });
                 }
@@ -123,13 +142,14 @@ angular.module('app.controllers', [])
                     //set authorization header
                     appFactory.setAuthorizationOnHeader($scope.data.user).then(function () {
                         //authenticate user
+                        setProgressMessage('Authenticating user credentials');
                         userFactory.authenticateUser($scope.data.user).then(function (userData) {
                             //setCurrent login user
                             userFactory.setCurrentUser($scope.data.user, userData).then(function () {
                                 //getting database name
+                                setProgressMessage('Prepare local storage');
                                 appFactory.getDataBaseName().then(function (databaseName) {
                                     $localStorage.app.baseBaseName = databaseName;
-                                    //@todo populate all tables for a given database
                                     var promises = [];
                                     //table as value , tableName as key
                                     angular.forEach(sqlLiteFactory.getDataBaseStructure(), function (table, tableName) {
@@ -137,29 +157,35 @@ angular.module('app.controllers', [])
                                             sqlLiteFactory.createTable(tableName, table.fields).then(function () {
                                                 console.log('create table :: ' + tableName);
                                             }, function () {
-                                                console.log('fail create table :: ' + tableName);
+                                                Notification('Fail create table :: ' + tableName);
                                             })
                                         );
                                     });
                                     $q.all(promises).then(function () {
                                         //getting dhis 2 instance system information
+                                        setProgressMessage('Loading system information from the server');
                                         systemFactory.getDhis2InstanceSystemInfo().then(function (data) {
                                             $localStorage.app.systemInformation = data;
                                             downloadOrganisationUnitsData(userData.organisationUnits);
                                         }, function () {
                                             //error on getting system information
+                                            hideProgressMessage();
                                             Notification.error('Fail to load System information, please checking your network connection');
                                         });
                                     }, function () {
                                         //error on prepare database
+                                        hideProgressMessage();
                                         Notification('Fail to prepare database');
                                     });
                                 }, function () {
+                                    hideProgressMessage();
                                 });
 
                             }, function () {
+                                hideProgressMessage();
                             });
                         }, function (errorStatus) {
+                            hideProgressMessage();
                             if (errorStatus == 401) {
                                 //unauthorized access
                                 var message = 'Fail to login, please check your username or password';
@@ -186,6 +212,7 @@ angular.module('app.controllers', [])
             var promises = [];
             var orgUnitId = null, fields = null, resource = "organisationUnits";
             if (organisationUnits.length > 0) {
+                setProgressMessage('Downloading assigned organisation Units');
                 var organisationUnitsData = [];
                 organisationUnits.forEach(function (organisationUnit) {
                     if (organisationUnit.id) {
@@ -198,12 +225,14 @@ angular.module('app.controllers', [])
                             organisationUnitsData.push(orgUnitData);
                         }, function () {
                             //error on downloading
+                            hideProgressMessage();
                         })
                     );
                 });
                 $q.all(promises).then(function () {
                     //saving org units
                     var promises = [];
+                    setProgressMessage('Saving assigned organisation Units to local storage');
                     organisationUnitsData.forEach(function (data) {
                         promises.push(
                             sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
@@ -214,6 +243,7 @@ angular.module('app.controllers', [])
                     $q.all(promises).then(function () {
                         downloadingDataSets();
                     }, function () {
+                        hideProgressMessage();
                         Notification('Fail to save assigned organisation units data');
                     });
 
@@ -229,9 +259,11 @@ angular.module('app.controllers', [])
         function downloadingDataSets() {
             var resource = "dataSets";
             var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,categories[id,name,categoryOptions[id,name]]]";
+            setProgressMessage('Downloading data sets');
             systemFactory.downloadMetadata(resource, null, fields).then(function (dataSets) {
                 //success on downloading
                 var promises = [];
+                setProgressMessage('Saving data sets to local storage');
                 dataSets[resource].forEach(function (data) {
                     promises.push(
                         sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
@@ -242,10 +274,12 @@ angular.module('app.controllers', [])
                 $q.all(promises).then(function () {
                     downloadingDataSetSections();
                 }, function () {
+                    hideProgressMessage();
                     Notification('Fail to save data sets data');
                 });
             }, function () {
                 //error on downloading
+                hideProgressMessage();
                 Notification('Fail to download data sets');
             })
         }
@@ -253,9 +287,10 @@ angular.module('app.controllers', [])
         function downloadingDataSetSections() {
             var resource = "sections";
             var fields = "id,name,indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],dataElements[id,name,formName,attributeValues[value,attribute[name]],categoryCombo[id,name,categoryOptionCombos[id,name]],displayName,description,valueType,optionSet[name,options[name,id,code]]";
+            setProgressMessage('Downloading sections');
             systemFactory.downloadMetadata(resource, null, fields).then(function (sections) {
                 //success on downloading
-                console.log('sections::' + sections[resource].length);
+                setProgressMessage('Saving sections to local storage');
                 var promises = [];
                 sections[resource].forEach(function (data) {
                     promises.push(
@@ -266,12 +301,15 @@ angular.module('app.controllers', [])
                 });
                 $q.all(promises).then(function () {
                     $localStorage.app.user.isLogin = true;
+                    hideProgressMessage();
                     $state.go('tabsController.apps', {}, {});
                 }, function () {
+                    hideProgressMessage();
                     Notification('Fail to save sections data');
                 });
             }, function () {
                 //error on downloading
+                hideProgressMessage();
                 Notification('Fail to download ' + resource);
             })
 
