@@ -30,7 +30,7 @@ angular.module('app', ['ionic',
     })
     .config(function(NotificationProvider) {
         NotificationProvider.setOptions({
-            delay: 10000,
+            delay: 5000,
             startTop: 20,
             startRight: 10,
             positionX: 'center',

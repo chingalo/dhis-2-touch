@@ -20,7 +20,9 @@
             <ion-item class="item-divider " id="profile-list-item-divider4">List of assigned Organisation Units</ion-item>
         </ion-list>
         <div class="item item-body " id="profile-list-item-container24">
-            <p>{{ data.assignedOrgnisationUnits |json}}</p>
+            <div style="text-transform: capitalize;" ng-repeat="assignedOrganisationUnitName in data.assignedOrganisationUnitsNames">
+                <p>{{ $index + 1}}.&nbsp; {{ assignedOrganisationUnitName }} </p>
+            </div>
         </div>
         <ion-list id="profile-list24" class=" ">
             <ion-item class="item-divider " id="profile-list-item-divider5">List of assigned Roles</ion-item>

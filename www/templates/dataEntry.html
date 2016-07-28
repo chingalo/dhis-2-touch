@@ -37,18 +37,30 @@
 
             <div ng-if = "data.selectedDataSetForm.id && data.selectedDataSetForm.categoryCombo " class="row">
                 <div ng-if = "data.selectedDataSetForm.categoryCombo.name !='default'" class="col col-100">
-                    {{data.selectedDataSetForm.categoryCombo |json }}
+                    <div ng-repeat="category in data.selectedDataSetForm.categoryCombo.categories" ng-click="openDataSetFormDimensionModal($index);">
+                        <h3>{{ category.name }}</h3>
+                        <p ng-if ="data.selectedDataSetFormDimension[category.id]">
+                            {{ data.selectedDataSetFormDimension[category.id].name }}
+                        </p>
+                        <p ng-if ="!data.selectedDataSetFormDimension[category.id]">
+                            Touch to select option
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <div ng-if = "data.selectedPeriod.name && data.selectedDataSetForm.id && data.selectedOrganisationUnit.id" class="item item-body " id="dataEntry-list-item-container13">
-                <p id="dataEntry-markdown21" style="margin-top:0px;color:#000000;text-align:center;" class=" ">BRM_Hospotal Scoring</p>
-            </div>
 
-            <div class="row" ng-if="data.selectedPeriod.name && data.selectedDataSetForm.id && data.selectedOrganisationUnit.id">
-                <div class="col col-100">
-                    <button class="button button-full button-positive" ng-click="redirectToDataEntryForm()">Data Entry</button>
-                </div>
+        </div>
+        <div class="spacer" style="width: 300px; height: 13px;"></div>
+        <div ng-if="data.selectedPeriod.name && data.selectedDataSetForm.id && data.selectedOrganisationUnit.id" class="item item-body">
+            <p><b>{{ data.selectedDataSetForm.name }}</b></p>
+            <p>Organisation Unit : {{ data.selectedOrganisationUnit.name }}</p>
+            <p>Period : {{ data.selectedPeriod.name }}</p>
+        </div>
+
+        <div class="row" ng-if="data.selectedPeriod.name && data.selectedDataSetForm.id && data.selectedOrganisationUnit.id">
+            <div class="col col-100">
+                <button class="button button-full button-positive" ng-click="redirectToDataEntryForm()">Data Entry</button>
             </div>
         </div>
     </ion-content>

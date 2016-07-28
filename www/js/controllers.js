@@ -15,7 +15,9 @@ angular.module('app.controllers', [])
             $localStorage.app = {
                 user: {},
                 userData: {},
-                systemInformation: {}
+                systemInformation: {},
+                dataEntryForm : {},
+                allOrgUnitData : {}
             }
         }
 
@@ -304,20 +306,23 @@ angular.module('app.controllers', [])
                                            sqlLiteFactory, organisationUnitFactory) {
 
         //object for data entry selection screen
-        //@todo data set data dimensions
         $scope.data = {
             sortedOrganisationUnits: [],
             selectedOrganisationUnit: {},
             assignedDataSetForms: [],
             selectedDataSetForm: {},
+            selectedDataSetFormDimension: {},
             selectedDataSetFormPeriod : [],
             selectedPeriod : {},
             currentPeriodOffset : 0,
             dataEntryForm : {
                 organisationUnitId : "",
                 dataSetId : "",
-                period : ""
-            }
+                period : "",
+                cc : "",
+                cp : ""
+            },
+            dataDimensionIndex : 0
         };
 
         /**
@@ -359,7 +364,7 @@ angular.module('app.controllers', [])
                     });
                 }, function () {
                     //fail to get org units from local storage
-                    Notation('Fail to get assigned organisation units from local storage ');
+                   Notification('Fail to get assigned organisation units from local storage ');
                 });
             }, function () {
             });
@@ -372,7 +377,9 @@ angular.module('app.controllers', [])
          */
         function getOrganisationUnitsArrayList(organisationUnits) {
             var organisationUnitsArrayList = [];
+            $localStorage.app.allOrgUnitData = {};
             organisationUnits.forEach(function (organisationUnit) {
+                $localStorage.app.allOrgUnitData[organisationUnit.id] = organisationUnit.name;
                 organisationUnitsArrayList.push({
                     id: organisationUnit.id,
                     name: organisationUnit.name,
@@ -382,6 +389,7 @@ angular.module('app.controllers', [])
                 });
                 if (organisationUnit.children) {
                     getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
+                        $localStorage.app.allOrgUnitData[organisationUnitChild.id] = organisationUnitChild.name;
                         organisationUnitsArrayList.push({
                             id: organisationUnitChild.id,
                             name: organisationUnitChild.name,
@@ -405,6 +413,8 @@ angular.module('app.controllers', [])
                     //reset forms array as well as selected form if any
                     $scope.data.assignedDataSetForms = [];
                     $scope.data.selectedDataSetForm = {};
+                    $scope.data.selectedDataSetFormDimension = {};
+                    $scope.data.selectedPeriod = {};
                     $scope.data.selectedOrganisationUnit = {
                         id: selectedOrganisationUnit.id,
                         name: selectedOrganisationUnit.name,
@@ -456,7 +466,7 @@ angular.module('app.controllers', [])
                     hideProgressMessage();
                 }, function () {
                     //fail to get org units from local storage
-                    Notation('Fail to get assigned data sets from local storage ');
+                   Notification('Fail to get assigned data sets from local storage ');
                 });
             }, function () {
             });
@@ -472,6 +482,7 @@ angular.module('app.controllers', [])
             if($scope.data.selectedDataSetForm.id){
                 if(selectedDataSetForm.id != $scope.data.selectedDataSetForm.id){
                     $scope.data.selectedPeriod = {};
+                    $scope.data.selectedDataSetFormDimension = {};
                     $scope.data.selectedDataSetFormPeriod = [];
                     $scope.data.currentPeriodOffset = 0;
                     $scope.data.selectedDataSetForm = selectedDataSetForm;
@@ -482,7 +493,6 @@ angular.module('app.controllers', [])
                 getPeriodSelections();
             }
             $scope.dataEntryFormModal.hide();
-            console.log(selectedDataSetForm);
         };
 
         /**
@@ -531,12 +541,64 @@ angular.module('app.controllers', [])
             $scope.periodModal.hide();
         };
 
-
-        //@todo data set dimension
+        /**
+         *
+         */
         $scope.redirectToDataEntryForm =function (){
-            $state.go('tabsController.dataEntryForm', {}, {});
+            if(isAllDataSetFormCategoriesSet()){
+                $scope.data.dataEntryForm.organisationUnitId = $scope.data.selectedOrganisationUnit.id;
+                $scope.data.dataEntryForm.dataSetId = $scope.data.selectedDataSetForm.id;
+                $scope.data.dataEntryForm.period = $scope.data.selectedPeriod.iso;
+                $localStorage.app.dataEntryForm = $scope.data.dataEntryForm;
+                $state.go('tabsController.dataEntryForm', {}, {});
+            }else{
+                Notification('Please select all data dimension');
+            }
         };
 
+        /**
+         * isAllDataSetFormCategoriesSet
+         * @returns {boolean}
+         */
+        function isAllDataSetFormCategoriesSet(){
+            var allDataSetFormCategoriesSet = false;
+            $scope.data.dataEntryForm.cp = "";
+            var selectedDataSetFormDimension = [];
+            if($scope.data.selectedDataSetForm.categoryCombo.name =='default'){
+                allDataSetFormCategoriesSet = true;
+                $scope.data.dataEntryForm.cc = "";
+            }else{
+                $scope.data.dataEntryForm.cc = $scope.data.selectedDataSetForm.categoryCombo.id;
+                $scope.data.selectedDataSetForm.categoryCombo.categories.forEach(function(category){
+                    if($scope.data.selectedDataSetFormDimension[category.id]){
+                        if($scope.data.dataEntryForm.cp == ""){
+                            $scope.data.dataEntryForm.cp +=$scope.data.selectedDataSetFormDimension[category.id].id;
+                        }else{
+                            $scope.data.dataEntryForm.cp += ';' + $scope.data.selectedDataSetFormDimension[category.id].id;
+                        }
+                        selectedDataSetFormDimension.push($scope.data.selectedDataSetFormDimension[category.id]);
+                    }
+                    if(selectedDataSetFormDimension.length == $scope.data.selectedDataSetForm.categoryCombo.categories.length){
+                        allDataSetFormCategoriesSet = true;
+                    }
+                });
+            }
+            return allDataSetFormCategoriesSet;
+        }
+
+        /**
+         * setSelectedDataSetFormDataDimension
+         * @param dataDimensionIndex
+         * @param selectedDataSetFormDataDimension
+         */
+        $scope.setSelectedDataSetFormDataDimension =function(dataDimensionIndex,selectedDataSetFormDataDimension){
+            var dataSetFormDimension = $scope.data.selectedDataSetForm.categoryCombo.categories[dataDimensionIndex]
+            $scope.data.selectedDataSetFormDimension[dataSetFormDimension.id] = {
+                id: selectedDataSetFormDataDimension.id,
+                name: selectedDataSetFormDataDimension.name
+            };
+            $scope.dataSetFormDimensionModal.hide();
+        };
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
@@ -553,16 +615,38 @@ angular.module('app.controllers', [])
         }).then(function (modal) {
             $scope.periodModal = modal;
         });
+        $ionicModal.fromTemplateUrl('templates/modal/openDataSetFormDimensionModal.html', {
+            scope: $scope
+        }).then(function (modal) {
+            $scope.dataSetFormDimensionModal = modal;
+        });
+
+        /**
+         * openDataSetFormDimensionModal
+         * @param dataDimensionIndex
+         */
+        $scope.openDataSetFormDimensionModal = function(dataDimensionIndex){
+            $scope.data.dataDimensionIndex = dataDimensionIndex;
+            $scope.dataSetFormDimensionModal.show();
+        };
 
     })
 
-    .controller('profileCtrl', function ($scope, userFactory) {
+    .controller('dataEntryFormCtrl', function ($scope,$localStorage,userFactory,sqlLiteFactory) {
+        $scope.$on("$ionicView.afterEnter", function (event, data) {
+            console.log($localStorage.app);
+        });
+
+
+    })
+
+    .controller('profileCtrl', function ($scope, userFactory,sqlLiteFactory,Notification) {
 
         //object for profile controller
         $scope.data = {
             userInformation: {},
             userRoles: [],
-            organisationUnits: [],
+            assignedOrganisationUnitsNames: [],
             assignedForms: []
         };
 
@@ -570,15 +654,40 @@ angular.module('app.controllers', [])
         $scope.$on("$ionicView.afterEnter", function (event, data) {
             //getting user data for profile view from local storage
             userFactory.getCurrentLoginUserUserdata().then(function (userData) {
-                //prepare data for profile view
                 $scope.data.userInformation = getUserInformation(userData);
                 $scope.data.userRoles = getUserRoles(userData.userRoles);
-                $scope.data.assignedOrgnisationUnits = userData.organisationUnits;
                 $scope.data.assignedForms = getAssignedFormsList(userData.userRoles);
+                setAssignedOrganisationUnits(userData.organisationUnits);
             }, function () {
-            })
+            });
         });
 
+        /**
+         * setAssignedOrganisationUnits
+         * @param organisationUnits
+         */
+        function setAssignedOrganisationUnits(organisationUnits){
+            var resource = "organisationUnits";
+            var ids = [];
+            organisationUnits.forEach(function (organisationUnit) {
+                ids.push(organisationUnit.id);
+            });
+            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
+                console.log(assignedOrgUnits);
+                assignedOrgUnits.forEach(function(assignedOrgUnit){
+                    $scope.data.assignedOrganisationUnitsNames.push(assignedOrgUnit.name);
+                });
+            }, function () {
+                //fail to get org units from local storage
+                Notification('Fail to get assigned organisation units from local storage ');
+            });
+        }
+
+        /**
+         * getUserInformation
+         * @param userData
+         * @returns {{}}
+         */
         function getUserInformation(userData) {
             var userInformation = {};
             for (var key in userData) {
@@ -753,7 +862,7 @@ angular.module('app.controllers', [])
                 });
             }, function () {
                 //fail to get org units from local storage
-                Notation('Fail to get assigned organisation units from local storage ');
+               Notification('Fail to get assigned organisation units from local storage ');
             });
         }
 
@@ -843,7 +952,7 @@ angular.module('app.controllers', [])
                 });
             }, function () {
                 //fail to get org units from local storage
-                Notation('Fail to get assigned organisation units from local storage ');
+               Notification('Fail to get assigned organisation units from local storage ');
             });
         }
 
@@ -909,9 +1018,6 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryFormCtrl', function ($scope) {
-
-    })
 
     .controller('eventRegisterCtrl', function ($scope) {
 
