@@ -226,11 +226,9 @@ angular.module('app.controllers', [])
 
         function downloadingDataSets() {
             var resource = "dataSets";
-            var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name]]]";
+            var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,categories[id,name,categoryOptions[id,name]]]";
             systemFactory.downloadMetadata(resource, null, fields).then(function (dataSets) {
                 //success on downloading
-                console.log('datasets ::' + dataSets[resource].length);
-                console.log(dataSets[resource]);
                 var promises = [];
                 dataSets[resource].forEach(function (data) {
                     promises.push(
@@ -484,6 +482,7 @@ angular.module('app.controllers', [])
                 getPeriodSelections();
             }
             $scope.dataEntryFormModal.hide();
+            console.log(selectedDataSetForm);
         };
 
         /**

@@ -35,7 +35,11 @@
                 </div>
             </div>
 
-            <div class="row"></div>
+            <div ng-if = "data.selectedDataSetForm.id && data.selectedDataSetForm.categoryCombo " class="row">
+                <div ng-if = "data.selectedDataSetForm.categoryCombo.name !='default'" class="col col-100">
+                    {{data.selectedDataSetForm.categoryCombo |json }}
+                </div>
+            </div>
 
             <div ng-if = "data.selectedPeriod.name && data.selectedDataSetForm.id && data.selectedOrganisationUnit.id" class="item item-body " id="dataEntry-list-item-container13">
                 <p id="dataEntry-markdown21" style="margin-top:0px;color:#000000;text-align:center;" class=" ">BRM_Hospotal Scoring</p>

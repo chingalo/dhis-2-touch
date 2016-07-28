@@ -292,10 +292,10 @@ angular.module('app.services', [])
                 defer.resolve();
                 return defer.promise;
             },
-            insertDataOnTable : function(tableName,fieldsValues){
+            insertDataOnTable: function (tableName, fieldsValues) {
                 var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
                 var fields = dataBaseStructure[tableName].fields;
-                var dataColumns = "", questionMarks = "", values = [], defer = $q.defer(),databaseName = $localStorage.app.baseBaseName;
+                var dataColumns = "", questionMarks = "", values = [], defer = $q.defer(), databaseName = $localStorage.app.baseBaseName;
                 fields.forEach(function (field, index) {
                     var dataColumn = field.value;
                     if (fieldsValues[dataColumn]) {
@@ -308,13 +308,15 @@ angular.module('app.services', [])
                         questionMarks += ',';
                     }
                     if (field.type != "LONGTEXT") {
-                        if(dataColumnValue == undefined){
+                        if (dataColumnValue == undefined) {
                             dataColumnValue = 0;
                         }
+                        values.push(dataColumnValue);
                     } else {
                         values.push(JSON.stringify(dataColumnValue));
                     }
                 });
+
                 var query = "INSERT OR REPLACE INTO " + tableName + " (" + dataColumns + ") VALUES (" + questionMarks + ")";
                 if (window.cordova) {
                     //for mobile devices
@@ -339,26 +341,26 @@ angular.module('app.services', [])
                 }
                 return defer.promise;
             },
-            getDataFromTableByAttributes : function(tableName,attribute,attributesValuesArray){
+            getDataFromTableByAttributes: function (tableName, attribute, attributesValuesArray) {
                 var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
                 var fields = dataBaseStructure[tableName].fields;
-                var db = null,values = [], defer = $q.defer(),databaseName = $localStorage.app.baseBaseName,query = "";
-                query +="SELECT * FROM " +tableName+" WHERE "+attribute+" IN (";
+                var db = null, values = [], defer = $q.defer(), databaseName = $localStorage.app.baseBaseName, query = "";
+                query += "SELECT * FROM " + tableName + " WHERE " + attribute + " IN (";
                 var inClauseValues = "";
-                attributesValuesArray.forEach(function(attributesValue,index){
+                attributesValuesArray.forEach(function (attributesValue, index) {
                     inClauseValues += "'" + attributesValue + "'";
                     if ((index + 1) < attributesValuesArray.length) {
                         inClauseValues += ',';
                     }
                 });
-                query +=inClauseValues;
-                query +=")";
+                query += inClauseValues;
+                query += ")";
 
                 if (window.cordova) {
                     //for mobile devices
                     db = $cordovaSQLite.openDB({name: databaseName, location: 'default'});
                     $cordovaSQLite.execute(db, query, values).then(function (result) {
-                        defer.resolve(sqlLiteFactory.formatQueryReturnResult(result,fields));
+                        defer.resolve(sqlLiteFactory.formatQueryReturnResult(result, fields));
                     }, function () {
                         defer.reject();
                     });
@@ -369,7 +371,7 @@ angular.module('app.services', [])
                     db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000);
                     db.transaction(function (tx) {
                         tx.executeSql(query, values, function (tx, result) {
-                            defer.resolve(sqlLiteFactory.formatQueryReturnResult(result,fields));
+                            defer.resolve(sqlLiteFactory.formatQueryReturnResult(result, fields));
                         }, function (error) {
                             defer.reject();
                         });
@@ -377,7 +379,7 @@ angular.module('app.services', [])
                 }
                 return defer.promise;
             },
-            formatQueryReturnResult : function(result,fields){
+            formatQueryReturnResult: function (result, fields) {
                 var len = result.rows.length;
                 var data = [];
 
@@ -387,7 +389,7 @@ angular.module('app.services', [])
                     fields.forEach(function (field) {
                         var dataColumn = field.value;
                         if (field.type != "LONGTEXT") {
-                            row[dataColumn] =  currentRow[dataColumn]
+                            row[dataColumn] = currentRow[dataColumn]
                         } else {
                             row[dataColumn] = eval("(" + currentRow[dataColumn] + ")");
                         }
@@ -442,22 +444,22 @@ angular.module('app.services', [])
     .factory('blankFactory', ['$q', function ($q) {
 
     }])
-    .factory('organisationUnitFactory', ['$q','$filter', function ($q,$filter) {
+    .factory('organisationUnitFactory', ['$q', '$filter', function ($q, $filter) {
 
         var organisationUnitFactory = {
-            getSortedOrganisationUnits : function(organisationUnits){
-                var data = [],defer = $q.defer();
-                organisationUnits.forEach(function(organisationUnit){
+            getSortedOrganisationUnits: function (organisationUnits) {
+                var data = [], defer = $q.defer();
+                organisationUnits.forEach(function (organisationUnit) {
                     data.push(organisationUnitFactory.sortingOrganisationUnit(organisationUnit));
                 });
                 defer.resolve(data);
                 return defer.promise;
             },
-            sortingOrganisationUnit : function(organisationUnit){
-                if(organisationUnit.children) {
+            sortingOrganisationUnit: function (organisationUnit) {
+                if (organisationUnit.children) {
                     organisationUnit.children = $filter('orderBy')(organisationUnit.children, 'name');
-                    organisationUnit.children.forEach(function (child,index) {
-                        organisationUnit.children[index]=organisationUnitFactory.sortingOrganisationUnit(child);
+                    organisationUnit.children.forEach(function (child, index) {
+                        organisationUnit.children[index] = organisationUnitFactory.sortingOrganisationUnit(child);
                     });
                 }
                 return organisationUnit;
@@ -473,20 +475,20 @@ angular.module('app.services', [])
 
     }]);
 
-function getSortedOrgUnit(orgUnits){
+function getSortedOrgUnit(orgUnits) {
     var data = [];
-    orgUnits.forEach(function(orgUnit){
+    orgUnits.forEach(function (orgUnit) {
         data.push(sortingOrUnit(orgUnit));
     });
     return data;
 }
 
 //sorting all orgUnits and its children
-function sortingOrUnit(parentOrgUnit){
-    if(parentOrgUnit.children) {
+function sortingOrUnit(parentOrgUnit) {
+    if (parentOrgUnit.children) {
         parentOrgUnit.children = $filter('orderBy')(parentOrgUnit.children, 'name');
-        parentOrgUnit.children.forEach(function (child,index) {
-            parentOrgUnit.children[index]=sortingOrUnit(child);
+        parentOrgUnit.children.forEach(function (child, index) {
+            parentOrgUnit.children[index] = sortingOrUnit(child);
         });
     }
     return parentOrgUnit;
