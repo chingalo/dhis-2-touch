@@ -45,6 +45,12 @@ angular.module('app.services', [])
                 $http.defaults.headers.common.Authorization = 'Basic ' + Base64.encode(user.username + ':' + user.password);
                 defer.resolve();
                 return defer.promise;
+            },
+            getAllAppInformation : function(){
+                var appInformation = $localStorage.app;
+                var defer = $q.defer();
+                defer.resolve(appInformation);
+                return defer.promise;
             }
         };
         return appFactory;

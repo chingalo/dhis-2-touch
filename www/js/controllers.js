@@ -16,8 +16,8 @@ angular.module('app.controllers', [])
                 user: {},
                 userData: {},
                 systemInformation: {},
-                dataEntryForm : {},
-                allOrgUnitData : {}
+                dataEntryForm: {},
+                allOrgUnitData: {}
             }
         }
 
@@ -301,8 +301,8 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryCtrl', function ($scope, $localStorage,Notification,$state,$timeout,
-                                           $ionicModal, userFactory,$ionicLoading,
+    .controller('dataEntryCtrl', function ($scope, $localStorage, Notification, $state, $timeout,
+                                           $ionicModal, userFactory, $ionicLoading,
                                            sqlLiteFactory, organisationUnitFactory) {
 
         //object for data entry selection screen
@@ -312,24 +312,27 @@ angular.module('app.controllers', [])
             assignedDataSetForms: [],
             selectedDataSetForm: {},
             selectedDataSetFormDimension: {},
-            selectedDataSetFormPeriod : [],
-            selectedPeriod : {},
-            currentPeriodOffset : 0,
-            dataEntryForm : {
-                organisationUnitId : "",
-                dataSetId : "",
-                period : "",
-                cc : "",
-                cp : ""
+            selectedDataSetFormPeriod: [],
+            selectedPeriod: {},
+            currentPeriodOffset: 0,
+            dataEntryForm: {
+                organisationUnitId: "",
+                dataSetId: "",
+                period: {
+                    iso: '',
+                    name: ''
+                },
+                cc: "",
+                cp: ""
             },
-            dataDimensionIndex : 0
+            dataDimensionIndex: 0
         };
 
         /**
          * setProgressMessage
          * @param message
          */
-        function setProgressMessage(message){
+        function setProgressMessage(message) {
             $ionicLoading.show({
                 template: message
             });
@@ -338,15 +341,17 @@ angular.module('app.controllers', [])
         /**
          * hideProgressMessage
          */
-        function hideProgressMessage(){
+        function hideProgressMessage() {
             $ionicLoading.hide();
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function(){
-                setProgressMessage('Loading Organisation Units');
-                getUserAssignedOrgUnits();
-            },500);
+            if($scope.data.sortedOrganisationUnits.length == 0){
+                $timeout(function () {
+                    setProgressMessage('Loading Organisation Units');
+                    getUserAssignedOrgUnits();
+                }, 500);
+            }
         });
 
         /**
@@ -366,7 +371,7 @@ angular.module('app.controllers', [])
                     });
                 }, function () {
                     //fail to get org units from local storage
-                   Notification('Fail to get assigned organisation units from local storage ');
+                    Notification('Fail to get assigned organisation units from local storage ');
                 });
             }, function () {
             });
@@ -411,8 +416,8 @@ angular.module('app.controllers', [])
          * @param selectedOrganisationUnit
          */
         $scope.setSelectedOrganisationUnit = function (selectedOrganisationUnit) {
-            if($scope.data.selectedOrganisationUnit.id){
-                if($scope.data.selectedOrganisationUnit.id != selectedOrganisationUnit.id){
+            if ($scope.data.selectedOrganisationUnit.id) {
+                if ($scope.data.selectedOrganisationUnit.id != selectedOrganisationUnit.id) {
                     //reset forms array as well as selected form if any
                     $scope.data.assignedDataSetForms = [];
                     $scope.data.selectedDataSetForm = {};
@@ -427,7 +432,7 @@ angular.module('app.controllers', [])
                     };
                     loadDataSets();
                 }
-            }else{
+            } else {
                 $scope.data.selectedOrganisationUnit = {
                     id: selectedOrganisationUnit.id,
                     name: selectedOrganisationUnit.name,
@@ -469,7 +474,7 @@ angular.module('app.controllers', [])
                     hideProgressMessage();
                 }, function () {
                     //fail to get org units from local storage
-                   Notification('Fail to get assigned data sets from local storage ');
+                    Notification('Fail to get assigned data sets from local storage ');
                 });
             }, function () {
             });
@@ -482,8 +487,8 @@ angular.module('app.controllers', [])
          * @param selectedDataSetForm
          */
         $scope.setSelectedDataSetForm = function (selectedDataSetForm) {
-            if($scope.data.selectedDataSetForm.id){
-                if(selectedDataSetForm.id != $scope.data.selectedDataSetForm.id){
+            if ($scope.data.selectedDataSetForm.id) {
+                if (selectedDataSetForm.id != $scope.data.selectedDataSetForm.id) {
                     $scope.data.selectedPeriod = {};
                     $scope.data.selectedDataSetFormDimension = {};
                     $scope.data.selectedDataSetFormPeriod = [];
@@ -491,7 +496,7 @@ angular.module('app.controllers', [])
                     $scope.data.selectedDataSetForm = selectedDataSetForm;
                     getPeriodSelections();
                 }
-            }else{
+            } else {
                 $scope.data.selectedDataSetForm = selectedDataSetForm;
                 getPeriodSelections();
             }
@@ -501,24 +506,24 @@ angular.module('app.controllers', [])
         /**
          * getPeriodSelections
          */
-        function getPeriodSelections(){
+        function getPeriodSelections() {
             var periodType = $scope.data.selectedDataSetForm.periodType;
             var openFuturePeriods = parseInt($scope.data.selectedDataSetForm.openFuturePeriods);
-            var periods = dhis2.period.generator.generateReversedPeriods(periodType,$scope.data.currentPeriodOffset);
+            var periods = dhis2.period.generator.generateReversedPeriods(periodType, $scope.data.currentPeriodOffset);
             periods = dhis2.period.generator.filterOpenPeriods(periodType, periods, openFuturePeriods);
-            if(periods.length > 0){
+            if (periods.length > 0) {
                 $scope.data.selectedDataSetFormPeriod = [];
-                periods.forEach(function(period){
+                periods.forEach(function (period) {
                     $scope.data.selectedDataSetFormPeriod.push({
-                        endDate : period.endDate,
-                        startDate : period.startDate,
-                        iso : period.iso,
-                        name : period.name
+                        endDate: period.endDate,
+                        startDate: period.startDate,
+                        iso: period.iso,
+                        name: period.name
                     });
                 });
-            }else{
+            } else {
                 Notification('There is further period selection');
-                $scope.data.currentPeriodOffset --;
+                $scope.data.currentPeriodOffset--;
             }
         }
 
@@ -526,11 +531,11 @@ angular.module('app.controllers', [])
          * changePeriodInterval
          * @param value
          */
-        $scope.changePeriodInterval = function(value){
-            if(value == "next"){
-                $scope.data.currentPeriodOffset ++;
-            }else{
-                $scope.data.currentPeriodOffset --;
+        $scope.changePeriodInterval = function (value) {
+            if (value == "next") {
+                $scope.data.currentPeriodOffset++;
+            } else {
+                $scope.data.currentPeriodOffset--;
             }
             getPeriodSelections();
         };
@@ -539,7 +544,7 @@ angular.module('app.controllers', [])
          * setSelectedPeriod
          * @param selectedPeriod
          */
-        $scope.setSelectedPeriod =function(selectedPeriod){
+        $scope.setSelectedPeriod = function (selectedPeriod) {
             $scope.data.selectedPeriod = selectedPeriod;
             $scope.periodModal.hide();
         };
@@ -547,14 +552,15 @@ angular.module('app.controllers', [])
         /**
          *
          */
-        $scope.redirectToDataEntryForm =function (){
-            if(isAllDataSetFormCategoriesSet()){
+        $scope.redirectToDataEntryForm = function () {
+            if (isAllDataSetFormCategoriesSet()) {
                 $scope.data.dataEntryForm.organisationUnitId = $scope.data.selectedOrganisationUnit.id;
                 $scope.data.dataEntryForm.dataSetId = $scope.data.selectedDataSetForm.id;
-                $scope.data.dataEntryForm.period = $scope.data.selectedPeriod.iso;
+                $scope.data.dataEntryForm.period.iso = $scope.data.selectedPeriod.iso;
+                $scope.data.dataEntryForm.period.name = $scope.data.selectedPeriod.name;
                 $localStorage.app.dataEntryForm = $scope.data.dataEntryForm;
                 $state.go('tabsController.dataEntryForm', {}, {});
-            }else{
+            } else {
                 Notification('Please select all data dimension');
             }
         };
@@ -563,25 +569,25 @@ angular.module('app.controllers', [])
          * isAllDataSetFormCategoriesSet
          * @returns {boolean}
          */
-        function isAllDataSetFormCategoriesSet(){
+        function isAllDataSetFormCategoriesSet() {
             var allDataSetFormCategoriesSet = false;
             $scope.data.dataEntryForm.cp = "";
             var selectedDataSetFormDimension = [];
-            if($scope.data.selectedDataSetForm.categoryCombo.name =='default'){
+            if ($scope.data.selectedDataSetForm.categoryCombo.name == 'default') {
                 allDataSetFormCategoriesSet = true;
                 $scope.data.dataEntryForm.cc = "";
-            }else{
+            } else {
                 $scope.data.dataEntryForm.cc = $scope.data.selectedDataSetForm.categoryCombo.id;
-                $scope.data.selectedDataSetForm.categoryCombo.categories.forEach(function(category){
-                    if($scope.data.selectedDataSetFormDimension[category.id]){
-                        if($scope.data.dataEntryForm.cp == ""){
-                            $scope.data.dataEntryForm.cp +=$scope.data.selectedDataSetFormDimension[category.id].id;
-                        }else{
+                $scope.data.selectedDataSetForm.categoryCombo.categories.forEach(function (category) {
+                    if ($scope.data.selectedDataSetFormDimension[category.id]) {
+                        if ($scope.data.dataEntryForm.cp == "") {
+                            $scope.data.dataEntryForm.cp += $scope.data.selectedDataSetFormDimension[category.id].id;
+                        } else {
                             $scope.data.dataEntryForm.cp += ';' + $scope.data.selectedDataSetFormDimension[category.id].id;
                         }
                         selectedDataSetFormDimension.push($scope.data.selectedDataSetFormDimension[category.id]);
                     }
-                    if(selectedDataSetFormDimension.length == $scope.data.selectedDataSetForm.categoryCombo.categories.length){
+                    if (selectedDataSetFormDimension.length == $scope.data.selectedDataSetForm.categoryCombo.categories.length) {
                         allDataSetFormCategoriesSet = true;
                     }
                 });
@@ -594,7 +600,7 @@ angular.module('app.controllers', [])
          * @param dataDimensionIndex
          * @param selectedDataSetFormDataDimension
          */
-        $scope.setSelectedDataSetFormDataDimension =function(dataDimensionIndex,selectedDataSetFormDataDimension){
+        $scope.setSelectedDataSetFormDataDimension = function (dataDimensionIndex, selectedDataSetFormDataDimension) {
             var dataSetFormDimension = $scope.data.selectedDataSetForm.categoryCombo.categories[dataDimensionIndex]
             $scope.data.selectedDataSetFormDimension[dataSetFormDimension.id] = {
                 id: selectedDataSetFormDataDimension.id,
@@ -628,21 +634,34 @@ angular.module('app.controllers', [])
          * openDataSetFormDimensionModal
          * @param dataDimensionIndex
          */
-        $scope.openDataSetFormDimensionModal = function(dataDimensionIndex){
+        $scope.openDataSetFormDimensionModal = function (dataDimensionIndex) {
             $scope.data.dataDimensionIndex = dataDimensionIndex;
             $scope.dataSetFormDimensionModal.show();
         };
 
     })
 
-    .controller('dataEntryFormCtrl', function ($scope,$localStorage,
-                                               userFactory,sqlLiteFactory,$timeout) {
+    .controller('dataEntryFormCtrl', function ($scope, $localStorage, $ionicLoading, Notification,
+                                               appFactory, sqlLiteFactory, $timeout) {
+
+        $scope.data = {
+            selectedDataSet: {},
+            selectedDataSetStorageStatus: {
+                online: 0,
+                local: 0
+            },
+            formRenderingType: '',
+            dataEntryFormParameter: {},
+            selectedOrgUnitObject: {},
+            selectedPeriod: {},
+            selectedDataSetSections: []
+        };
 
         /**
          * setProgressMessage
          * @param message
          */
-        function setProgressMessage(message){
+        function setProgressMessage(message) {
             $ionicLoading.show({
                 template: message
             });
@@ -651,29 +670,100 @@ angular.module('app.controllers', [])
         /**
          * hideProgressMessage
          */
-        function hideProgressMessage(){
+        function hideProgressMessage() {
             $ionicLoading.hide();
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function(){
-                setProgressMessage('data entry for comming soon');
-                getDataEntrySetValues();
-            },500);
-
+            $timeout(function () {
+                setProgressMessage('Loading data entry form');
+                getDataEntrySetValuesFromStorage();
+            }, 500);
         });
 
-        function getDataEntrySetValues(){
-            userFactory.getCurrentLoginUserUserdata().then(function(userData){
-                console.log(userData);
-                hideProgressMessage();
-            },function(){})
+        /**
+         * getDataEntrySetValuesFromStorage
+         */
+        function getDataEntrySetValuesFromStorage() {
+            appFactory.getAllAppInformation().then(function (allAppInformation) {
+                if (allAppInformation.dataEntryForm && allAppInformation.dataEntryForm.dataSetId != "") {
+                    $scope.data.selectedOrgUnitObject = {
+                        id: allAppInformation.dataEntryForm.organisationUnitId,
+                        name: allAppInformation.allOrgUnitData[allAppInformation.dataEntryForm.organisationUnitId]
+                    };
+                    $scope.data.selectedPeriod = allAppInformation.dataEntryForm.period;
+                    $scope.data.dataEntryFormParameter = allAppInformation.dataEntryForm;
+                    setProgressMessage('Loading data entry form details');
+                    loadingDataSetDetailsFromStorage();
+                } else {
+                    console.log('Please make sure you select data set');
+                    hideProgressMessage();
+                }
+            }, function () {
+            })
         }
 
+        /**
+         * loadingDataSetDetailsFromStorage
+         */
+        function loadingDataSetDetailsFromStorage() {
+            var ids = [], resource = "dataSets";
+            ids.push($scope.data.dataEntryFormParameter.dataSetId);
+            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (dataSetList) {
+                if (dataSetList.length > 0) {
+                    $scope.data.selectedDataSet = dataSetList[0];
+                    checkingDataSetTypeAndRenderForm();
+                }
+                hideProgressMessage();
+            }, function () {
+                //fail to get org units from local storage
+                Notification('Fail to get data set from local storage ');
+            });
+        }
+
+        function checkingDataSetTypeAndRenderForm() {
+            console.log($scope.data.selectedDataSet);
+            if ($scope.data.selectedDataSet.sections.length > 0) {
+                $scope.data.selectedDataSetSections = [];
+                $scope.data.formRenderingType = "SECTION";
+                var ids = [], resource = "sections";
+                $scope.data.selectedDataSet.sections.forEach(function (section) {
+                    ids.push(section.id);
+                });
+                setProgressMessage('Loading data entry form sections');
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (sections) {
+                    var sectionsObject = getSectionsObject(sections);
+                    $scope.data.selectedDataSet.sections.forEach(function (section) {
+                        $scope.data.selectedDataSetSections.push(sectionsObject[section.id]);
+                    });
+                    hideProgressMessage();
+                    sectionsObject = null;
+                    ids = null;
+                }, function () {
+                    //fail to get org units from local storage
+                    Notification('Fail to get data set sections from local storage ');
+                });
+            }else{
+                $scope.data.formRenderingType = 'DEFAULT'
+            }
+        }
+
+        /**
+         * getSectionsObject
+         * @param section
+         * @returns {{}}
+         */
+        function getSectionsObject(sections) {
+            var sectionsObject = {};
+            sections.forEach(function (section) {
+                sectionsObject[section.id] = section;
+            });
+            return sectionsObject;
+        }
 
     })
 
-    .controller('profileCtrl', function ($scope, userFactory,sqlLiteFactory,Notification) {
+    .controller('profileCtrl', function ($scope, userFactory, sqlLiteFactory, Notification) {
 
         //object for profile controller
         $scope.data = {
@@ -699,14 +789,14 @@ angular.module('app.controllers', [])
          * setAssignedOrganisationUnits
          * @param organisationUnits
          */
-        function setAssignedOrganisationUnits(organisationUnits){
+        function setAssignedOrganisationUnits(organisationUnits) {
             var resource = "organisationUnits";
             var ids = [];
             organisationUnits.forEach(function (organisationUnit) {
                 ids.push(organisationUnit.id);
             });
             sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
-                assignedOrgUnits.forEach(function(assignedOrgUnit){
+                assignedOrgUnits.forEach(function (assignedOrgUnit) {
                     $scope.data.assignedOrganisationUnitsNames.push(assignedOrgUnit.name);
                 });
             }, function () {
@@ -843,15 +933,14 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('dashBoardCtrl', function ($scope,$ionicLoading,$timeout) {
-
+    .controller('dashBoardCtrl', function ($scope, $ionicLoading, $timeout) {
 
 
         /**
          * setProgressMessage
          * @param message
          */
-        function setProgressMessage(message){
+        function setProgressMessage(message) {
             $ionicLoading.show({
                 template: message
             });
@@ -860,26 +949,25 @@ angular.module('app.controllers', [])
         /**
          * hideProgressMessage
          */
-        function hideProgressMessage(){
+        function hideProgressMessage() {
             $ionicLoading.hide();
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function(){
+            $timeout(function () {
                 console.log("dashboard")
-            },500);
+            }, 500);
         });
     })
 
-    .controller('trackerCaptureCtrl', function ($scope,$ionicLoading,$timeout) {
-
+    .controller('trackerCaptureCtrl', function ($scope, $ionicLoading, $timeout) {
 
 
         /**
          * setProgressMessage
          * @param message
          */
-        function setProgressMessage(message){
+        function setProgressMessage(message) {
             $ionicLoading.show({
                 template: message
             });
@@ -888,27 +976,26 @@ angular.module('app.controllers', [])
         /**
          * hideProgressMessage
          */
-        function hideProgressMessage(){
+        function hideProgressMessage() {
             $ionicLoading.hide();
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function(){
+            $timeout(function () {
                 console.log("tracker view list");
-            },500);
+            }, 500);
         });
 
     })
 
-    .controller('reportListCtrl', function ($scope,$ionicLoading,$timeout) {
-
+    .controller('reportListCtrl', function ($scope, $ionicLoading, $timeout) {
 
 
         /**
          * setProgressMessage
          * @param message
          */
-        function setProgressMessage(message){
+        function setProgressMessage(message) {
             $ionicLoading.show({
                 template: message
             });
@@ -917,20 +1004,20 @@ angular.module('app.controllers', [])
         /**
          * hideProgressMessage
          */
-        function hideProgressMessage(){
+        function hideProgressMessage() {
             $ionicLoading.hide();
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function(){
+            $timeout(function () {
                 console.log("Populate report list")
-            },500);
+            }, 500);
         });
 
     })
 
     .controller('eventCaptureCtrl', function ($scope, $localStorage, sqlLiteFactory,
-                                              $ionicModal,$timeout,$ionicLoading,userFactory,
+                                              $ionicModal, $timeout, $ionicLoading, userFactory,
                                               organisationUnitFactory) {
         //object for event capture selection screen
         $scope.data = {
@@ -943,7 +1030,7 @@ angular.module('app.controllers', [])
          * setProgressMessage
          * @param message
          */
-        function setProgressMessage(message){
+        function setProgressMessage(message) {
             $ionicLoading.show({
                 template: message
             });
@@ -952,15 +1039,17 @@ angular.module('app.controllers', [])
         /**
          * hideProgressMessage
          */
-        function hideProgressMessage(){
+        function hideProgressMessage() {
             $ionicLoading.hide();
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function(){
-                setProgressMessage('Loading Organisation Units');
-                getUserAssignedOrgUnits();
-            },500);
+            if($scope.data.sortedOrganisationUnits.length == 0){
+                $timeout(function () {
+                    setProgressMessage('Loading Organisation Units');
+                    getUserAssignedOrgUnits();
+                }, 500);
+            }
         });
 
         /**
@@ -1042,7 +1131,7 @@ angular.module('app.controllers', [])
     })
 
     .controller('reportParameterSelectionCtrl', function ($scope, $localStorage,
-                                                          $ionicModal,$ionicLoading,$timeout,userFactory,
+                                                          $ionicModal, $ionicLoading, $timeout, userFactory,
                                                           sqlLiteFactory, organisationUnitFactory) {
         //object for data entry selection screen
         $scope.data = {
@@ -1055,7 +1144,7 @@ angular.module('app.controllers', [])
          * setProgressMessage
          * @param message
          */
-        function setProgressMessage(message){
+        function setProgressMessage(message) {
             $ionicLoading.show({
                 template: message
             });
@@ -1064,15 +1153,17 @@ angular.module('app.controllers', [])
         /**
          * hideProgressMessage
          */
-        function hideProgressMessage(){
+        function hideProgressMessage() {
             $ionicLoading.hide();
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function(){
-                setProgressMessage('Loading Organisation Units');
-                getUserAssignedOrgUnits();
-            },500);
+            if($scope.data.sortedOrganisationUnits.length == 0){
+                $timeout(function () {
+                    setProgressMessage('Loading Organisation Units');
+                    getUserAssignedOrgUnits();
+                }, 500);
+            }
         });
 
         /**

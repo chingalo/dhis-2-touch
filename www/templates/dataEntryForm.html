@@ -1,14 +1,35 @@
 <ion-view title="Data Entry Form" id="page17" style="background-color:#F5F5F5;" class=" ">
     <ion-content padding="true" class="has-header">
         <div class="spacer" style="width: 300px; height: 14px;"></div>
-        <div class="item item-body " id="dataEntryForm-list-item-container9">
-            <p id="dataEntryForm-markdown34" style="color:#000000;text-align:center;" class=" ">BRN_Hospital Form</p>
-            <div></div>
+        <div class="item item-text-wrap">
+            <h2 align="center">{{ data.selectedDataSet.name }} Data entry form</h2>
+            <p>Organisation Unit : {{ data.selectedOrgUnitObject.name }}</p>
+            <p>Period : {{ data.selectedPeriod.name }}, synced : {{ data.selectedDataSetStorageStatus.online }} Not
+                synced : {{ data.selectedDataSetStorageStatus.local}} </p>
         </div>
-        <div class="spacer" style="width: 300px; height: 12px;"></div>
-        <div class="item item-body " id="dataEntryForm-list-item-container18">
-            <p id="dataEntryForm-markdown28" style="color:#000000;text-align:center;" class=" ">Data enry form field to come</p>
+
+        <div class="spacer" style="width: 100%; height: 5px;"></div>
+        <div class="item item-body " >
+
+            <div ng-if = "data.formRenderingType == 'DEFAULT'">
+                <div class="item item-text-wrap">
+                    {{ data.selectedDataSet.dataElements |json }}
+                </div>
+            </div>
+
+            <div ng-if = "data.formRenderingType == 'SECTION'">
+                <div ng-repeat="section in data.selectedDataSetSections">
+                    <div class="item item-divider">
+                        {{ section.name }}
+                    </div>
+                    <div class="item item-text-wrap">
+                        {{ section.dataElements |json }}
+                    </div>
+                </div>
+            </div>
+
         </div>
+
         <div class="spacer" style="width: 300px; height: 12px;"></div>
         <div class="item item-body " id="dataEntryForm-list-item-container19">
             <p id="dataEntryForm-markdown29" style="margin-top:0px;color:#000000;" class=" "></p>
