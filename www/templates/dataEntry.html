@@ -35,16 +35,16 @@
                 </div>
             </div>
 
+            <div class="row"></div>
+
             <div ng-if = "data.selectedPeriod.name && data.selectedDataSetForm.id && data.selectedOrganisationUnit.id" class="item item-body " id="dataEntry-list-item-container13">
                 <p id="dataEntry-markdown21" style="margin-top:0px;color:#000000;text-align:center;" class=" ">BRM_Hospotal Scoring</p>
             </div>
 
             <div class="row" ng-if="data.selectedPeriod.name && data.selectedDataSetForm.id && data.selectedOrganisationUnit.id">
-                <div class="col col-10"></div>
-                <div class="col col-80">
+                <div class="col col-100">
                     <button class="button button-full button-positive" ng-click="redirectToDataEntryForm()">Data Entry</button>
                 </div>
-                <div class="col col-10"></div>
             </div>
         </div>
     </ion-content>

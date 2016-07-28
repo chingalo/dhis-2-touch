@@ -380,7 +380,7 @@ angular.module('app.controllers', [])
                     name: organisationUnit.name,
                     ancestors: organisationUnit.ancestors,
                     dataSets: organisationUnit.dataSets,
-                    level: organisationUnit.level
+                    level: parseInt(organisationUnit.level)
                 });
                 if (organisationUnit.children) {
                     getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
@@ -389,7 +389,7 @@ angular.module('app.controllers', [])
                             name: organisationUnitChild.name,
                             ancestors: organisationUnitChild.ancestors,
                             dataSets: organisationUnitChild.dataSets,
-                            level: organisationUnitChild.level
+                            level: parseInt(organisationUnitChild.level)
                         });
                     });
                 }
@@ -402,20 +402,31 @@ angular.module('app.controllers', [])
          * @param selectedOrganisationUnit
          */
         $scope.setSelectedOrganisationUnit = function (selectedOrganisationUnit) {
-            $scope.data.selectedOrganisationUnit = {
-                id: selectedOrganisationUnit.id,
-                name: selectedOrganisationUnit.name,
-                level: selectedOrganisationUnit.level,
-                ancestors: selectedOrganisationUnit.ancestors,
-                dataSets: selectedOrganisationUnit.dataSets
-            };
-
-            //reset forms array as well as selected form if any
-            $scope.data.assignedDataSetForms = [];
-            $scope.data.selectedDataSetForm = {};
+            if($scope.data.selectedOrganisationUnit.id){
+                if($scope.data.selectedOrganisationUnit.id != selectedOrganisationUnit.id){
+                    //reset forms array as well as selected form if any
+                    $scope.data.assignedDataSetForms = [];
+                    $scope.data.selectedDataSetForm = {};
+                    $scope.data.selectedOrganisationUnit = {
+                        id: selectedOrganisationUnit.id,
+                        name: selectedOrganisationUnit.name,
+                        level: selectedOrganisationUnit.level,
+                        ancestors: selectedOrganisationUnit.ancestors,
+                        dataSets: selectedOrganisationUnit.dataSets
+                    };
+                    loadDataSets();
+                }
+            }else{
+                $scope.data.selectedOrganisationUnit = {
+                    id: selectedOrganisationUnit.id,
+                    name: selectedOrganisationUnit.name,
+                    level: selectedOrganisationUnit.level,
+                    ancestors: selectedOrganisationUnit.ancestors,
+                    dataSets: selectedOrganisationUnit.dataSets
+                };
+                loadDataSets();
+            }
             $scope.organisationUnitsModal.hide();
-            //loading data set list
-            loadDataSets();
         };
 
         /**
@@ -460,14 +471,19 @@ angular.module('app.controllers', [])
          * @param selectedDataSetForm
          */
         $scope.setSelectedDataSetForm = function (selectedDataSetForm) {
-            if(selectedDataSetForm.id != $scope.data.selectedDataSetForm){}else{
-                $scope.data.selectedPeriod = {};
-                $scope.data.selectedDataSetFormPeriod = [];
-                $scope.data.currentPeriodOffset = 0;
+            if($scope.data.selectedDataSetForm.id){
+                if(selectedDataSetForm.id != $scope.data.selectedDataSetForm.id){
+                    $scope.data.selectedPeriod = {};
+                    $scope.data.selectedDataSetFormPeriod = [];
+                    $scope.data.currentPeriodOffset = 0;
+                    $scope.data.selectedDataSetForm = selectedDataSetForm;
+                    getPeriodSelections();
+                }
+            }else{
+                $scope.data.selectedDataSetForm = selectedDataSetForm;
+                getPeriodSelections();
             }
-            $scope.data.selectedDataSetForm = selectedDataSetForm;
             $scope.dataEntryFormModal.hide();
-            getPeriodSelections();
         };
 
         /**
@@ -755,7 +771,7 @@ angular.module('app.controllers', [])
                     name: organisationUnit.name,
                     ancestors: organisationUnit.ancestors,
                     dataSets: organisationUnit.dataSets,
-                    level: organisationUnit.level
+                    level: parseInt(organisationUnit.level)
                 });
                 if (organisationUnit.children) {
                     getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
@@ -764,7 +780,7 @@ angular.module('app.controllers', [])
                             name: organisationUnitChild.name,
                             ancestors: organisationUnitChild.ancestors,
                             dataSets: organisationUnitChild.dataSets,
-                            level: organisationUnitChild.level
+                            level: parseInt(organisationUnitChild.level)
                         });
                     });
                 }
@@ -845,7 +861,7 @@ angular.module('app.controllers', [])
                     name: organisationUnit.name,
                     ancestors: organisationUnit.ancestors,
                     dataSets: organisationUnit.dataSets,
-                    level: organisationUnit.level
+                    level: parseInt(organisationUnit.level)
                 });
                 if (organisationUnit.children) {
                     getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
@@ -854,7 +870,7 @@ angular.module('app.controllers', [])
                             name: organisationUnitChild.name,
                             ancestors: organisationUnitChild.ancestors,
                             dataSets: organisationUnitChild.dataSets,
-                            level: organisationUnitChild.level
+                            level: parseInt(organisationUnitChild.level)
                         });
                     });
                 }
