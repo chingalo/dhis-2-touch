@@ -301,7 +301,7 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryCtrl', function ($scope, $localStorage,Notification,$state,
+    .controller('dataEntryCtrl', function ($scope, $localStorage,Notification,$state,$timeout,
                                            $ionicModal, userFactory,$ionicLoading,
                                            sqlLiteFactory, organisationUnitFactory) {
 
@@ -343,14 +343,16 @@ angular.module('app.controllers', [])
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            getUserAssignedOrgUnits();
+            $timeout(function(){
+                setProgressMessage('Loading Organisation Units');
+                getUserAssignedOrgUnits();
+            },500);
         });
 
         /**
          * getUserAssignedOrgUnits
          */
         function getUserAssignedOrgUnits() {
-            setProgressMessage('Loading Organisation Units');
             var resource = "organisationUnits";
             var ids = [];
             userFactory.getCurrentLoginUserUserdata().then(function (userData) {
@@ -400,6 +402,7 @@ angular.module('app.controllers', [])
                     });
                 }
             });
+
             return organisationUnitsArrayList;
         }
 
@@ -632,10 +635,40 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryFormCtrl', function ($scope,$localStorage,userFactory,sqlLiteFactory) {
+    .controller('dataEntryFormCtrl', function ($scope,$localStorage,
+                                               userFactory,sqlLiteFactory,$timeout) {
+
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message){
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage(){
+            $ionicLoading.hide();
+        }
+
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log($localStorage.app);
+            $timeout(function(){
+                setProgressMessage('data entry for comming soon');
+                getDataEntrySetValues();
+            },500);
+
         });
+
+        function getDataEntrySetValues(){
+            userFactory.getCurrentLoginUserUserdata().then(function(userData){
+                console.log(userData);
+                hideProgressMessage();
+            },function(){})
+        }
 
 
     })
@@ -673,7 +706,6 @@ angular.module('app.controllers', [])
                 ids.push(organisationUnit.id);
             });
             sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
-                console.log(assignedOrgUnits);
                 assignedOrgUnits.forEach(function(assignedOrgUnit){
                     $scope.data.assignedOrganisationUnitsNames.push(assignedOrgUnit.name);
                 });
@@ -811,28 +843,94 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('dashBoardCtrl', function ($scope) {
+    .controller('dashBoardCtrl', function ($scope,$ionicLoading,$timeout) {
+
+
+
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message){
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage(){
+            $ionicLoading.hide();
+        }
+
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('dashboard view has been loaded successfully', data, event)
+            $timeout(function(){
+                console.log("dashboard")
+            },500);
         });
     })
 
-    .controller('trackerCaptureCtrl', function ($scope) {
+    .controller('trackerCaptureCtrl', function ($scope,$ionicLoading,$timeout) {
+
+
+
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message){
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage(){
+            $ionicLoading.hide();
+        }
+
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('tracker view has been loaded successfully', data, event)
+            $timeout(function(){
+                console.log("tracker view list");
+            },500);
         });
 
     })
 
-    .controller('reportListCtrl', function ($scope) {
+    .controller('reportListCtrl', function ($scope,$ionicLoading,$timeout) {
+
+
+
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message){
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage(){
+            $ionicLoading.hide();
+        }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log("Populate report list")
+            $timeout(function(){
+                console.log("Populate report list")
+            },500);
         });
+
     })
 
     .controller('eventCaptureCtrl', function ($scope, $localStorage, sqlLiteFactory,
-                                              $ionicModal,
+                                              $ionicModal,$timeout,$ionicLoading,userFactory,
                                               organisationUnitFactory) {
         //object for event capture selection screen
         $scope.data = {
@@ -841,28 +939,50 @@ angular.module('app.controllers', [])
             selectedOrganisationUnit: {}
         };
 
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message){
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage(){
+            $ionicLoading.hide();
+        }
+
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            getUserAssignedOrgUnits();
+            $timeout(function(){
+                setProgressMessage('Loading Organisation Units');
+                getUserAssignedOrgUnits();
+            },500);
         });
 
         /**
          * getUserAssignedOrgUnits
          */
         function getUserAssignedOrgUnits() {
-            $scope.data.isLoadingData = true;
             var resource = "organisationUnits";
             var ids = [];
-            $localStorage.app.userData.organisationUnits.forEach(function (organisationUnit) {
-                ids.push(organisationUnit.id);
-            });
-            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
-                organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
-                    $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
-                    $scope.data.isLoadingData = false;
+            userFactory.getCurrentLoginUserUserdata().then(function (userData) {
+                userData.organisationUnits.forEach(function (organisationUnit) {
+                    ids.push(organisationUnit.id);
+                });
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
+                    organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
+                        $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
+                        hideProgressMessage();
+                    });
+                }, function () {
+                    //fail to get org units from local storage
+                    Notification('Fail to get assigned organisation units from local storage ');
                 });
             }, function () {
-                //fail to get org units from local storage
-               Notification('Fail to get assigned organisation units from local storage ');
             });
         }
 
@@ -922,7 +1042,7 @@ angular.module('app.controllers', [])
     })
 
     .controller('reportParameterSelectionCtrl', function ($scope, $localStorage,
-                                                          $ionicModal,
+                                                          $ionicModal,$ionicLoading,$timeout,userFactory,
                                                           sqlLiteFactory, organisationUnitFactory) {
         //object for data entry selection screen
         $scope.data = {
@@ -931,28 +1051,50 @@ angular.module('app.controllers', [])
             selectedOrganisationUnit: {}
         };
 
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message){
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage(){
+            $ionicLoading.hide();
+        }
+
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            getUserAssignedOrgUnits();
+            $timeout(function(){
+                setProgressMessage('Loading Organisation Units');
+                getUserAssignedOrgUnits();
+            },500);
         });
 
         /**
          * getUserAssignedOrgUnits
          */
         function getUserAssignedOrgUnits() {
-            $scope.data.isLoadingData = true;
             var resource = "organisationUnits";
             var ids = [];
-            $localStorage.app.userData.organisationUnits.forEach(function (organisationUnit) {
-                ids.push(organisationUnit.id);
-            });
-            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
-                organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
-                    $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
-                    $scope.data.isLoadingData = false;
+            userFactory.getCurrentLoginUserUserdata().then(function (userData) {
+                userData.organisationUnits.forEach(function (organisationUnit) {
+                    ids.push(organisationUnit.id);
+                });
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
+                    organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
+                        $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
+                        hideProgressMessage();
+                    });
+                }, function () {
+                    //fail to get org units from local storage
+                    Notification('Fail to get assigned organisation units from local storage ');
                 });
             }, function () {
-                //fail to get org units from local storage
-               Notification('Fail to get assigned organisation units from local storage ');
             });
         }
 
