@@ -181,7 +181,6 @@ angular.module('app.controllers', [])
          * @param organisationUnits
          */
         function downloadOrganisationUnitsData(organisationUnits) {
-            var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
             var promises = [];
             var orgUnitId = null, fields = null, resource = "organisationUnits";
             if (organisationUnits.length > 0) {
@@ -227,10 +226,11 @@ angular.module('app.controllers', [])
 
         function downloadingDataSets() {
             var resource = "dataSets";
-            var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,displayName,categoryOptionCombos[id,name]]";
+            var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id,name]]]";
             systemFactory.downloadMetadata(resource, null, fields).then(function (dataSets) {
                 //success on downloading
                 console.log('datasets ::' + dataSets[resource].length);
+                console.log(dataSets[resource]);
                 var promises = [];
                 dataSets[resource].forEach(function (data) {
                     promises.push(
@@ -301,16 +301,25 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryCtrl', function ($scope, $localStorage,
+    .controller('dataEntryCtrl', function ($scope, $localStorage,Notification,$state,
                                            $ionicModal, userFactory,$ionicLoading,
                                            sqlLiteFactory, organisationUnitFactory) {
 
         //object for data entry selection screen
+        //@todo data set data dimensions
         $scope.data = {
             sortedOrganisationUnits: [],
             selectedOrganisationUnit: {},
             assignedDataSetForms: [],
-            selectedDataSetForm: {}
+            selectedDataSetForm: {},
+            selectedDataSetFormPeriod : [],
+            selectedPeriod : {},
+            currentPeriodOffset : 0,
+            dataEntryForm : {
+                organisationUnitId : "",
+                dataSetId : "",
+                period : ""
+            }
         };
 
         /**
@@ -433,9 +442,6 @@ angular.module('app.controllers', [])
                 });
                 sqlLiteFactory.getDataFromTableByAttributes(resource, "id", assignedDataSetFormIds).then(function (dataSets) {
                     $scope.data.assignedDataSetForms = dataSets;
-                    console.log('dataSets');
-                    console.log(dataSets.length);
-                    console.log(dataSets);
                     assignedDataSetFormIdsByUserRole = null;
                     resource = null;
                     hideProgressMessage();
@@ -449,10 +455,73 @@ angular.module('app.controllers', [])
         }
 
 
+        /**
+         * setSelectedDataSetForm
+         * @param selectedDataSetForm
+         */
         $scope.setSelectedDataSetForm = function (selectedDataSetForm) {
+            if(selectedDataSetForm.id != $scope.data.selectedDataSetForm){}else{
+                $scope.data.selectedPeriod = {};
+                $scope.data.selectedDataSetFormPeriod = [];
+                $scope.data.currentPeriodOffset = 0;
+            }
             $scope.data.selectedDataSetForm = selectedDataSetForm;
             $scope.dataEntryFormModal.hide();
+            getPeriodSelections();
         };
+
+        /**
+         * getPeriodSelections
+         */
+        function getPeriodSelections(){
+            var periodType = $scope.data.selectedDataSetForm.periodType;
+            var openFuturePeriods = parseInt($scope.data.selectedDataSetForm.openFuturePeriods);
+            var periods = dhis2.period.generator.generateReversedPeriods(periodType,$scope.data.currentPeriodOffset);
+            periods = dhis2.period.generator.filterOpenPeriods(periodType, periods, openFuturePeriods);
+            if(periods.length > 0){
+                $scope.data.selectedDataSetFormPeriod = [];
+                periods.forEach(function(period){
+                    $scope.data.selectedDataSetFormPeriod.push({
+                        endDate : period.endDate,
+                        startDate : period.startDate,
+                        iso : period.iso,
+                        name : period.name
+                    });
+                });
+            }else{
+                Notification('There is further period selection');
+                $scope.data.currentPeriodOffset --;
+            }
+        }
+
+        /**
+         * changePeriodInterval
+         * @param value
+         */
+        $scope.changePeriodInterval = function(value){
+            if(value == "next"){
+                $scope.data.currentPeriodOffset ++;
+            }else{
+                $scope.data.currentPeriodOffset --;
+            }
+            getPeriodSelections();
+        };
+
+        /**
+         * setSelectedPeriod
+         * @param selectedPeriod
+         */
+        $scope.setSelectedPeriod =function(selectedPeriod){
+            $scope.data.selectedPeriod = selectedPeriod;
+            $scope.periodModal.hide();
+        };
+
+
+        //@todo data set dimension
+        $scope.redirectToDataEntryForm =function (){
+            $state.go('tabsController.dataEntryForm', {}, {});
+        };
+
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope

@@ -308,7 +308,9 @@ angular.module('app.services', [])
                         questionMarks += ',';
                     }
                     if (field.type != "LONGTEXT") {
-                        values.push(dataColumnValue)
+                        if(dataColumnValue == undefined){
+                            dataColumnValue = 0;
+                        }
                     } else {
                         values.push(JSON.stringify(dataColumnValue));
                     }

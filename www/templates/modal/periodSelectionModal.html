@@ -8,6 +8,23 @@
         </div>
     </ion-header-bar>
     <ion-content>
-        period list coming soon !!
+        <div class="row">
+            <div class="col col-50">
+                <button class="button button-full button-positive" ng-click="changePeriodInterval('previous')">Previous</button>
+            </div>
+            <div class="col col-50">
+                <button class="button button-full button-positive" ng-click="changePeriodInterval('next')">Next</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col col-100">
+                <ion-list>
+                    <ion-item ng-repeat=" period in data.selectedDataSetFormPeriod"  ng-click="setSelectedPeriod(period)">
+                        {{ period.name }}
+                    </ion-item>
+                </ion-list>
+            </div>
+        </div>
     </ion-content>
 </ion-modal-view>
