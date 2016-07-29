@@ -2,7 +2,13 @@
     border-color: #1D5288;
     background-color: #1D5288;
 }
-
+.menu-app-icon-list{
+    width: 70px;
+    max-height: 70px;
+}
+.menu-app {
+    text-align: center;
+}
 /*.button.button-positive {*/
     /*border-color: #1D5288;*/
     /*background-color: #1D5288;*/
