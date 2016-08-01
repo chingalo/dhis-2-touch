@@ -258,7 +258,7 @@ angular.module('app.controllers', [])
 
         function downloadingDataSets() {
             var resource = "dataSets";
-            var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,categories[id,name,categoryOptions[id,name]]]";
+            var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id]],categories[id,name,categoryOptions[id,name]]]";
             setProgressMessage('Downloading data sets');
             systemFactory.downloadMetadata(resource, null, fields).then(function (dataSets) {
                 //success on downloading
@@ -360,6 +360,7 @@ angular.module('app.controllers', [])
                     iso: '',
                     name: ''
                 },
+                attributeOptionCombo:"",
                 cc: "",
                 cp: ""
             },
@@ -388,7 +389,7 @@ angular.module('app.controllers', [])
                 $timeout(function () {
                     setProgressMessage('Loading Organisation Units');
                     getUserAssignedOrgUnits();
-                }, 500);
+                }, 100);
             }
         });
 
@@ -679,7 +680,9 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryFormCtrl', function ($scope, $localStorage, $ionicLoading, Notification,
+    .controller('dataEntryFormCtrl', function ($scope, $localStorage, 
+                                               $ionicLoading, Notification,
+                                               dataValuesFactory,
                                                appFactory, sqlLiteFactory, $timeout) {
 
         $scope.data = {
@@ -716,7 +719,7 @@ angular.module('app.controllers', [])
             $timeout(function () {
                 setProgressMessage('Loading data entry form');
                 getDataEntrySetValuesFromStorage();
-            }, 500);
+            }, 100);
         });
 
         /**
@@ -744,13 +747,18 @@ angular.module('app.controllers', [])
         /**
          * loadingDataSetDetailsFromStorage
          */
+        //@todo loading data entry form attributeOptionCombo
         function loadingDataSetDetailsFromStorage() {
             var ids = [], resource = "dataSets";
             ids.push($scope.data.dataEntryFormParameter.dataSetId);
             sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (dataSetList) {
                 if (dataSetList.length > 0) {
                     $scope.data.selectedDataSet = dataSetList[0];
-                    checkingDataSetTypeAndRenderForm();
+                    dataValuesFactory.getDataValuesSetAttributeOptionCombo($scope.data.dataEntryFormParameter.cc,$scope.data.dataEntryFormParameter.cp,dataSetList[0].categoryCombo.categoryOptionCombos).then(function(attributeOptionCombo){
+                        $scope.data.dataEntryFormParameter.attributeOptionCombo = attributeOptionCombo;
+                        checkingDataSetTypeAndRenderForm();
+                    });
+
                 }
                 hideProgressMessage();
             }, function () {
@@ -759,8 +767,13 @@ angular.module('app.controllers', [])
             });
         }
 
+        /**
+         * 
+         */
         function checkingDataSetTypeAndRenderForm() {
-            console.log($scope.data.selectedDataSet);
+            console.log('dataEntryFormParameter');
+            console.log($scope.data.dataEntryFormParameter);
+            
             if ($scope.data.selectedDataSet.sections.length > 0) {
                 $scope.data.selectedDataSetSections = [];
                 $scope.data.formRenderingType = "SECTION";
@@ -773,8 +786,9 @@ angular.module('app.controllers', [])
                     var sectionsObject = getSectionsObject(sections);
                     $scope.data.selectedDataSet.sections.forEach(function (section) {
                         $scope.data.selectedDataSetSections.push(sectionsObject[section.id]);
-                    });
+                    });                    
                     hideProgressMessage();
+                    downLoadingDataValuesFromServer();
                     sectionsObject = null;
                     ids = null;
                 }, function () {
@@ -782,8 +796,25 @@ angular.module('app.controllers', [])
                     Notification('Fail to get data set sections from local storage ');
                 });
             }else{
-                $scope.data.formRenderingType = 'DEFAULT'
+                $scope.data.formRenderingType = 'DEFAULT';
+                downLoadingDataValuesFromServer();
             }
+        }
+        
+        function downLoadingDataValuesFromServer(){
+            var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
+            var period = $scope.data.dataEntryFormParameter.period.iso;
+            var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
+            var attributeOptionCombo = $scope.data.dataEntryFormParameter.attributeOptionCombo;
+            setProgressMessage('Downloading data values from the server');
+            dataValuesFactory.getDataValueSet(dataSetId,period,orgUnitId,attributeOptionCombo).then(function(data){
+                console.log('data values');
+                console.log(data);
+                hideProgressMessage();
+            },function(){
+                hideProgressMessage();
+                Notification('Fail to download data values from the server');
+            })
         }
 
         /**
@@ -994,7 +1025,7 @@ angular.module('app.controllers', [])
         $scope.$on("$ionicView.afterEnter", function (event, data) {
             $timeout(function () {
                 console.log("dashboard")
-            }, 500);
+            }, 100);
         });
     })
 
@@ -1021,7 +1052,7 @@ angular.module('app.controllers', [])
         $scope.$on("$ionicView.afterEnter", function (event, data) {
             $timeout(function () {
                 console.log("tracker view list");
-            }, 500);
+            }, 100);
         });
 
     })
@@ -1049,7 +1080,7 @@ angular.module('app.controllers', [])
         $scope.$on("$ionicView.afterEnter", function (event, data) {
             $timeout(function () {
                 console.log("Populate report list")
-            }, 500);
+            }, 100);
         });
 
     })
@@ -1086,7 +1117,7 @@ angular.module('app.controllers', [])
                 $timeout(function () {
                     setProgressMessage('Loading Organisation Units');
                     getUserAssignedOrgUnits();
-                }, 500);
+                }, 100);
             }
         });
 
@@ -1200,7 +1231,7 @@ angular.module('app.controllers', [])
                 $timeout(function () {
                     setProgressMessage('Loading Organisation Units');
                     getUserAssignedOrgUnits();
-                }, 500);
+                }, 100);
             }
         });
 

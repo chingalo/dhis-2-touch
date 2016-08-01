@@ -240,6 +240,20 @@ angular.module('app.services', [])
                     {value: 'indicators', type: 'LONGTEXT'},
                     {value: 'dataElements', type: 'LONGTEXT'}
                 ]
+            },
+            dataValues : {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'de', type: 'TEXT'},
+                    {value: 'co', type: 'TEXT'},
+                    {value: 'pe', type: 'TEXT'},
+                    {value: 'ou', type: 'TEXT'},
+                    {value: 'cc', type: 'TEXT'},
+                    {value: 'cp', type: 'TEXT'},
+                    {value: 'value', type: 'TEXT'},
+                    {value: 'syncStatus', type: 'TEXT'},
+                    {value: 'dataSetId', type: 'TEXT'}
+                ]
             }
         };
 
@@ -447,7 +461,74 @@ angular.module('app.services', [])
         return systemFactory;
     }])
 
-    .factory('blankFactory', ['$q', function ($q) {
+    .factory('dataValuesFactory', ['$q', '$http', '$localStorage','sqlLiteFactory', function ($q, $http, $localStorage,sqlLiteFactory) {
+        var baseUrl = $localStorage.app.baseUrl;
+        var dataValuesFactory = {
+            getDataValueSet:function(dataSet,period,orgUnit,attributeOptionCombo){
+                var defer = $q.defer();
+                var parameter = 'dataSet='+dataSet+'&period='+period+'&orgUnit='+orgUnit;
+                $http.get(baseUrl + '/api/dataValueSets.json?'+parameter)
+                    .success(function(results){
+                        dataValuesFactory.getFilteredDataValuesByDataSetAttributeOptionCombo(results.dataValues,attributeOptionCombo).then(function(FilteredDataValues){
+                            defer.resolve(FilteredDataValues);
+                        });
+                    })
+                    .error(function(){
+                        defer.reject();
+                    });
+                return defer.promise;
+            },
+            getFilteredDataValuesByDataSetAttributeOptionCombo : function(dataValues,attributeOptionCombo){
+                var FilteredDataValues = [];
+                var defer = $q.defer();
+                dataValues.forEach(function(dataValue){
+                    if(dataValue.attributeOptionCombo == attributeOptionCombo){
+                        FilteredDataValues.push({
+                            categoryOptionCombo : dataValue.categoryOptionCombo,
+                            dataElement : dataValue.dataElement,
+                            value : dataValue.value
+                        });
+                    }
+                });
+
+                defer.resolve(FilteredDataValues);
+                return defer.promise;
+            },
+            getDataValuesSetAttributeOptionCombo : function(cc,cp,categoryOptionCombos){
+                var attributeOptionCombo = "";
+                var defer = $q.defer();
+                if(cc == ""){
+                    attributeOptionCombo = categoryOptionCombos[0].id;
+                }else{
+                    var categoriesOptionsArray = cp.split(';'),categoriesOptionsObjectsArray=[];
+                    categoriesOptionsArray.forEach(function(categoriesOption){
+                        categoriesOptionsObjectsArray.push({
+                            "id": categoriesOption
+                        });
+                    });
+                    for(var i = 0; i < categoryOptionCombos.length; i ++){
+                        var hasAttributeOptionCombo = true,categoryOptionCombo = categoryOptionCombos[i];
+                        categoriesOptionsObjectsArray.forEach(function(categoriesOptionsObject){
+                            categoryOptionCombo.categoryOptions.forEach(function(categoryOption){
+                                if(categoryOption.id != categoriesOptionsObject.id){
+                                    hasAttributeOptionCombo = false;
+                                }
+                            });
+                        });
+                        if(hasAttributeOptionCombo){
+                            attributeOptionCombo = categoryOptionCombo.id;
+                            break;
+                        }
+                    }
+                    categoriesOptionsArray = null;
+                }
+                defer.resolve(attributeOptionCombo);
+                return defer.promise;
+            }
+
+        };
+
+        return dataValuesFactory;
 
     }])
     .factory('organisationUnitFactory', ['$q', '$filter', function ($q, $filter) {
