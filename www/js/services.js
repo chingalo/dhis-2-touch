@@ -337,6 +337,8 @@ angular.module('app.services', [])
                     }
                 });
 
+                dataBaseStructure = null;fields = null;
+
                 var query = "INSERT OR REPLACE INTO " + tableName + " (" + dataColumns + ") VALUES (" + questionMarks + ")";
                 if (window.cordova) {
                     //for mobile devices
@@ -481,15 +483,17 @@ angular.module('app.services', [])
             getFilteredDataValuesByDataSetAttributeOptionCombo : function(dataValues,attributeOptionCombo){
                 var FilteredDataValues = [];
                 var defer = $q.defer();
-                dataValues.forEach(function(dataValue){
-                    if(dataValue.attributeOptionCombo == attributeOptionCombo){
-                        FilteredDataValues.push({
-                            categoryOptionCombo : dataValue.categoryOptionCombo,
-                            dataElement : dataValue.dataElement,
-                            value : dataValue.value
-                        });
-                    }
-                });
+                if(dataValues){
+                    dataValues.forEach(function(dataValue){
+                        if(dataValue.attributeOptionCombo == attributeOptionCombo){
+                            FilteredDataValues.push({
+                                categoryOptionCombo : dataValue.categoryOptionCombo,
+                                dataElement : dataValue.dataElement,
+                                value : dataValue.value
+                            });
+                        }
+                    });
+                }
 
                 defer.resolve(FilteredDataValues);
                 return defer.promise;

@@ -682,7 +682,7 @@ angular.module('app.controllers', [])
 
     .controller('dataEntryFormCtrl', function ($scope, $localStorage, 
                                                $ionicLoading, Notification,
-                                               dataValuesFactory,
+                                               dataValuesFactory,$q,
                                                appFactory, sqlLiteFactory, $timeout) {
 
         $scope.data = {
@@ -747,7 +747,6 @@ angular.module('app.controllers', [])
         /**
          * loadingDataSetDetailsFromStorage
          */
-        //@todo loading data entry form attributeOptionCombo
         function loadingDataSetDetailsFromStorage() {
             var ids = [], resource = "dataSets";
             ids.push($scope.data.dataEntryFormParameter.dataSetId);
@@ -786,8 +785,8 @@ angular.module('app.controllers', [])
                     var sectionsObject = getSectionsObject(sections);
                     $scope.data.selectedDataSet.sections.forEach(function (section) {
                         $scope.data.selectedDataSetSections.push(sectionsObject[section.id]);
-                    });                    
-                    hideProgressMessage();
+                    });
+                    setProgressMessage('Downloading data values from the server');
                     downLoadingDataValuesFromServer();
                     sectionsObject = null;
                     ids = null;
@@ -800,21 +799,88 @@ angular.module('app.controllers', [])
                 downLoadingDataValuesFromServer();
             }
         }
-        
+
+        /**
+         * downLoadingDataValuesFromServer
+         */
         function downLoadingDataValuesFromServer(){
             var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
             var period = $scope.data.dataEntryFormParameter.period.iso;
             var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
             var attributeOptionCombo = $scope.data.dataEntryFormParameter.attributeOptionCombo;
             setProgressMessage('Downloading data values from the server');
-            dataValuesFactory.getDataValueSet(dataSetId,period,orgUnitId,attributeOptionCombo).then(function(data){
-                console.log('data values');
-                console.log(data);
-                hideProgressMessage();
+            dataValuesFactory.getDataValueSet(dataSetId,period,orgUnitId,attributeOptionCombo).then(function(dataValues){
+                if(dataValues.length > 0){
+                    saveOnlineDataValuesToLocalStorage(dataValues);
+                }else{
+                    loadingDataValuesFromLocalStorage();
+                }
             },function(){
-                hideProgressMessage();
+                loadingDataValuesFromLocalStorage();
                 Notification('Fail to download data values from the server');
-            })
+            });
+        }
+
+        /**
+         * saveOnlineDataValuesToLocalStorage
+         * @param dataValues
+         */
+        function saveOnlineDataValuesToLocalStorage(dataValues){
+            var promises = [],resource = "dataValues";
+            var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
+            var period = $scope.data.dataEntryFormParameter.period.iso;
+            var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
+            var index = 1;
+            dataValues.forEach(function (dataValue) {
+                var data = {
+                    id: dataSetId + '-' +dataValue.dataElement + '-'+dataValue.categoryOptionCombo+'-'+period+ '-' +orgUnitId,
+                    de: dataValue.dataElement,
+                    co: dataValue.categoryOptionCombo,
+                    pe: period,
+                    ou: orgUnitId,
+                    cc: $scope.data.dataEntryFormParameter.cc,
+                    cp: $scope.data.dataEntryFormParameter.cp,
+                    value: dataValue.value,
+                    syncStatus: 'synced',
+                    dataSetId: dataSetId
+                };
+                promises.push(
+                    sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                        var savingPercentage = ((index/dataValues.length) * 100).toFixed(2);
+                        setProgressMessage('Saving data values to localStorage ' + savingPercentage  + '%');
+                        index ++;
+                    }, function () {
+                    })
+                );
+            });
+
+            $q.all(promises).then(function () {
+                loadingDataValuesFromLocalStorage();
+            }, function () {
+                loadingDataValuesFromLocalStorage();
+                Notification('Fail to save data values to localStorage');
+            });
+        }
+
+        function loadingDataValuesFromLocalStorage(){
+            setProgressMessage('Checking for data values from localStorage');
+            console.log($scope.data.selectedDataSet.dataElements);
+            var ids = [],resource = "dataValues";
+            var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
+            var period = $scope.data.dataEntryFormParameter.period.iso;
+            var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
+
+            if($scope.data.selectedDataSet.dataElements){
+                $scope.data.selectedDataSet.dataElements.forEach(function(dataElement){
+                    if(dataElement.categoryCombo && dataElement.categoryCombo.categoryOptionCombos){
+                        dataElement.categoryCombo.categoryOptionCombos.forEach(function(categoryOptionCombo){
+                           ids.push(dataSetId + '-' +dataElement.id + '-'+categoryOptionCombo.id+'-'+period+ '-' +orgUnitId);
+                        })
+                    }
+                });
+            }
+            console.log(ids);
+            hideProgressMessage();
         }
 
         /**
