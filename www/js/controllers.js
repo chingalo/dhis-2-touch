@@ -955,7 +955,10 @@ angular.module('app.controllers', [])
             });
         }
 
-        //@todo checking for availability of drop down options
+        /**
+         * setDataValuesForDataEntryForm
+         * @param dataValues
+         */
         function setDataValuesForDataEntryForm(dataValues){
             $scope.data.selectedDataSetStorageStatus.online = 0;
             $scope.data.selectedDataSetStorageStatus.local = 0;
@@ -964,7 +967,7 @@ angular.module('app.controllers', [])
                 dataValues.forEach(function(dataValue){
                     console.log(isDataElementHasDropDown(dataValue.de));
                     var fieldId = dataValue.de + '-'+dataValue.co;
-                    $scope.data.entryFormMetadata.dataValues[fieldId] = dataValue.value;
+                    $scope.data.entryFormMetadata.dataValues[fieldId] = shouldTypeCastToInteger(dataValue.de)? parseInt(dataValue.value) :isDataElementHasDropDown(dataValue.de)? {code :dataValue.value,name:'',id : ''}:dataValue.value;
                     if(dataValue.syncStatus == "synced"){
                         $scope.data.selectedDataSetStorageStatus.online ++;
                     }else{
@@ -972,7 +975,6 @@ angular.module('app.controllers', [])
                     }
                     fieldId = null;
                 });
-                console.log($scope.data.entryFormMetadata);
                 hideProgressMessage();
             }else{
                 hideProgressMessage();
@@ -992,6 +994,35 @@ angular.module('app.controllers', [])
                 }
             }
             return result;
+        }
+
+        /**
+         * shouldTypeCastToInteger
+         * @param dataElementId
+         * @returns {boolean}
+         */
+        function shouldTypeCastToInteger(dataElementId){
+            var dataElement = $scope.data.entryFormMetadata.dataElements[dataElementId];
+            var result = false;
+            if($scope.isInteger(dataElement.valueType) && (!$scope.hasOptionSets(dataElement))){
+                result =true;
+            }
+            if($scope.isIntegerZeroOrPositive(dataElement.valueType) && (!$scope.hasOptionSets(dataElement))){
+                result =true;
+            }
+
+            return result;
+        }
+
+        //@todo saving values and checking for extend functions
+        $scope.changeDataEntryForm = function(dataElement){
+            console.log(dataElement.name);
+            for(var key in $scope.data.entryFormMetadata.dataValues){
+                var modelValue = key.split('-');
+                if(modelValue[0] == dataElement.id){
+                   console.log($scope.data.entryFormMetadata.dataValues[key]);
+                }
+            }
         }
 
         /**

@@ -36,3 +36,8 @@
 .bar .title.title-right {
     text-align: center !important;
 }
+
+.paginationScroll{
+    height:400px;
+    overflow:auto;
+}
