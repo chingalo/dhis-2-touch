@@ -336,9 +336,7 @@ angular.module('app.services', [])
                         values.push(JSON.stringify(dataColumnValue));
                     }
                 });
-
                 dataBaseStructure = null;fields = null;
-
                 var query = "INSERT OR REPLACE INTO " + tableName + " (" + dataColumns + ") VALUES (" + questionMarks + ")";
                 if (window.cordova) {
                     //for mobile devices

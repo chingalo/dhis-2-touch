@@ -13,7 +13,7 @@
 
             <div ng-if = "data.formRenderingType == 'DEFAULT'">
                 <div class="item item-text-wrap">
-                    {{ data.selectedDataSet.dataElements |json }}
+                    <div ng-include="'templates/entryFormPartials/entryFormDefault.html'"></div>                    {
                 </div>
             </div>
 
@@ -23,7 +23,7 @@
                         {{ section.name }}
                     </div>
                     <div class="item item-text-wrap">
-                        {{ section.dataElements |json }}
+                        <div ng-include="'templates/entryFormPartials/entryFormSections.html'"></div>
                     </div>
                 </div>
             </div>
@@ -31,6 +31,10 @@
         </div>
 
         <div class="spacer" style="width: 300px; height: 12px;"></div>
+        <div class="item item-text-wrap">
+            <div ng-include="'templates/entryFormPartials/pagination.html'"></div>
+        </div>
+
         <div class="item item-body " id="dataEntryForm-list-item-container19">
             <p id="dataEntryForm-markdown29" style="margin-top:0px;color:#000000;" class=" "></p>
             <div id="dataEntryForm-button-bar4" class=" button-bar ">

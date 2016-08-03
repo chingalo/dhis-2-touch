@@ -69,6 +69,65 @@ angular.module('app.controllers', [])
             }
         });
 
+        //flexibility for form
+        $scope.isInteger = function (key) {
+            if (key == "NUMBER" || key == "INTEGER") {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        $scope.isTrueOnly = function (key) {
+            if (key == "TRUE_ONLY") {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        $scope.isIntegerZeroOrPositive = function (key) {
+            if (key == "INTEGER_ZERO_OR_POSITIVE") {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        $scope.isDate = function (key) {
+            if (key == "DATE") {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        $scope.isString = function (key) {
+            if (key == "TEXT" || key == "LONG_TEXT") {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        $scope.isBoolean = function (key) {
+            if (key == "BOOLEAN") {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        $scope.hasOptionSets = function (dataElement) {
+
+            if (dataElement.optionSet != undefined) {
+                return true;
+            } else {
+                return false;
+            }
+        };
+        $scope.getOptionSets = function (dataElement) {
+            if (dataElement.optionSet) {
+                return dataElement.optionSet.options;
+            } else {
+                return false;
+            }
+        };
+
     })
 
     .controller('appsCtrl', function ($scope) {
@@ -76,6 +135,7 @@ angular.module('app.controllers', [])
         $scope.onSwipeLeft = function () {
             console.log('onSwipeLeft');
         }
+
     })
 
     .controller('accountCtrl', function ($scope) {
@@ -691,6 +751,10 @@ angular.module('app.controllers', [])
                 online: 0,
                 local: 0
             },
+            entryFormMetadata : {
+                dataElements : {},
+                dataValues : {}
+            },
             formRenderingType: '',
             dataEntryFormParameter: {},
             selectedOrgUnitObject: {},
@@ -770,9 +834,6 @@ angular.module('app.controllers', [])
          * 
          */
         function checkingDataSetTypeAndRenderForm() {
-            console.log('dataEntryFormParameter');
-            console.log($scope.data.dataEntryFormParameter);
-            
             if ($scope.data.selectedDataSet.sections.length > 0) {
                 $scope.data.selectedDataSetSections = [];
                 $scope.data.formRenderingType = "SECTION";
@@ -862,14 +923,18 @@ angular.module('app.controllers', [])
             });
         }
 
+        /**
+         * loadingDataValuesFromLocalStorage
+         */
         function loadingDataValuesFromLocalStorage(){
             setProgressMessage('Checking for data values from localStorage');
-            console.log($scope.data.selectedDataSet.dataElements);
             var ids = [],resource = "dataValues";
             var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
             var period = $scope.data.dataEntryFormParameter.period.iso;
             var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
+            $scope.data.entryFormMetadata.dataElements = {};
 
+            //prepare ids for query to local storage
             if($scope.data.selectedDataSet.dataElements){
                 $scope.data.selectedDataSet.dataElements.forEach(function(dataElement){
                     if(dataElement.categoryCombo && dataElement.categoryCombo.categoryOptionCombos){
@@ -877,10 +942,56 @@ angular.module('app.controllers', [])
                            ids.push(dataSetId + '-' +dataElement.id + '-'+categoryOptionCombo.id+'-'+period+ '-' +orgUnitId);
                         })
                     }
+                    $scope.data.entryFormMetadata.dataElements[dataElement.id] = dataElement;
                 });
             }
-            console.log(ids);
-            hideProgressMessage();
+
+            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (dataValues) {
+                setDataValuesForDataEntryForm(dataValues);
+            }, function () {
+                //fail to get org units from local storage
+                Notification('Fail to get data values from local storage ');
+                hideProgressMessage();
+            });
+        }
+
+        //@todo checking for availability of drop down options
+        function setDataValuesForDataEntryForm(dataValues){
+            $scope.data.selectedDataSetStorageStatus.online = 0;
+            $scope.data.selectedDataSetStorageStatus.local = 0;
+            if(dataValues.length > 0){
+                $scope.data.entryFormMetadata.dataValues = {};
+                dataValues.forEach(function(dataValue){
+                    console.log(isDataElementHasDropDown(dataValue.de));
+                    var fieldId = dataValue.de + '-'+dataValue.co;
+                    $scope.data.entryFormMetadata.dataValues[fieldId] = dataValue.value;
+                    if(dataValue.syncStatus == "synced"){
+                        $scope.data.selectedDataSetStorageStatus.online ++;
+                    }else{
+                        $scope.data.selectedDataSetStorageStatus.local ++;
+                    }
+                    fieldId = null;
+                });
+                console.log($scope.data.entryFormMetadata);
+                hideProgressMessage();
+            }else{
+                hideProgressMessage();
+            }
+        }
+
+        /**
+         * isDataElementHasDropDown
+         * @param dataElementId
+         * @returns {boolean}
+         */
+        function isDataElementHasDropDown(dataElementId){
+            var result = false;
+            if($scope.data.entryFormMetadata.dataElements[dataElementId]){
+                if($scope.hasOptionSets($scope.data.entryFormMetadata.dataElements[dataElementId])){
+                    result = true;
+                }
+            }
+            return result;
         }
 
         /**
