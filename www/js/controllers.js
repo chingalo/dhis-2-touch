@@ -128,6 +128,7 @@ angular.module('app.controllers', [])
             }
         };
 
+
     })
 
     .controller('appsCtrl', function ($scope) {
@@ -144,7 +145,7 @@ angular.module('app.controllers', [])
         }
     })
 
-    .controller('loginCtrl', function ($scope, appFactory, $q,$ionicLoading,
+    .controller('loginCtrl', function ($scope, appFactory, $q, $ionicLoading,
                                        userFactory, Notification, systemFactory,
                                        $localStorage, sqlLiteFactory,
                                        $state) {
@@ -420,7 +421,7 @@ angular.module('app.controllers', [])
                     iso: '',
                     name: ''
                 },
-                attributeOptionCombo:"",
+                attributeOptionCombo: "",
                 cc: "",
                 cp: ""
             },
@@ -445,7 +446,7 @@ angular.module('app.controllers', [])
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            if($scope.data.sortedOrganisationUnits.length == 0){
+            if ($scope.data.sortedOrganisationUnits.length == 0) {
                 $timeout(function () {
                     setProgressMessage('Loading Organisation Units');
                     getUserAssignedOrgUnits();
@@ -740,9 +741,9 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('dataEntryFormCtrl', function ($scope, $localStorage, 
+    .controller('dataEntryFormCtrl', function ($scope, $localStorage,
                                                $ionicLoading, Notification,
-                                               dataValuesFactory,$q,
+                                               dataValuesFactory, $q,
                                                appFactory, sqlLiteFactory, $timeout) {
 
         $scope.data = {
@@ -751,9 +752,9 @@ angular.module('app.controllers', [])
                 online: 0,
                 local: 0
             },
-            entryFormMetadata : {
-                dataElements : {},
-                dataValues : {}
+            entryFormMetadata: {
+                dataElements: {},
+                dataValues: {}
             },
             formRenderingType: '',
             dataEntryFormParameter: {},
@@ -817,7 +818,7 @@ angular.module('app.controllers', [])
             sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (dataSetList) {
                 if (dataSetList.length > 0) {
                     $scope.data.selectedDataSet = dataSetList[0];
-                    dataValuesFactory.getDataValuesSetAttributeOptionCombo($scope.data.dataEntryFormParameter.cc,$scope.data.dataEntryFormParameter.cp,dataSetList[0].categoryCombo.categoryOptionCombos).then(function(attributeOptionCombo){
+                    dataValuesFactory.getDataValuesSetAttributeOptionCombo($scope.data.dataEntryFormParameter.cc, $scope.data.dataEntryFormParameter.cp, dataSetList[0].categoryCombo.categoryOptionCombos).then(function (attributeOptionCombo) {
                         $scope.data.dataEntryFormParameter.attributeOptionCombo = attributeOptionCombo;
                         checkingDataSetTypeAndRenderForm();
                     });
@@ -831,7 +832,7 @@ angular.module('app.controllers', [])
         }
 
         /**
-         * 
+         *
          */
         function checkingDataSetTypeAndRenderForm() {
             if ($scope.data.selectedDataSet.sections.length > 0) {
@@ -855,7 +856,7 @@ angular.module('app.controllers', [])
                     //fail to get org units from local storage
                     Notification('Fail to get data set sections from local storage ');
                 });
-            }else{
+            } else {
                 $scope.data.formRenderingType = 'DEFAULT';
                 downLoadingDataValuesFromServer();
             }
@@ -864,19 +865,19 @@ angular.module('app.controllers', [])
         /**
          * downLoadingDataValuesFromServer
          */
-        function downLoadingDataValuesFromServer(){
+        function downLoadingDataValuesFromServer() {
             var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
             var period = $scope.data.dataEntryFormParameter.period.iso;
             var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
             var attributeOptionCombo = $scope.data.dataEntryFormParameter.attributeOptionCombo;
             setProgressMessage('Downloading data values from the server');
-            dataValuesFactory.getDataValueSet(dataSetId,period,orgUnitId,attributeOptionCombo).then(function(dataValues){
-                if(dataValues.length > 0){
+            dataValuesFactory.getDataValueSet(dataSetId, period, orgUnitId, attributeOptionCombo).then(function (dataValues) {
+                if (dataValues.length > 0) {
                     saveOnlineDataValuesToLocalStorage(dataValues);
-                }else{
+                } else {
                     loadingDataValuesFromLocalStorage();
                 }
-            },function(){
+            }, function () {
                 loadingDataValuesFromLocalStorage();
                 Notification('Fail to download data values from the server');
             });
@@ -886,15 +887,16 @@ angular.module('app.controllers', [])
          * saveOnlineDataValuesToLocalStorage
          * @param dataValues
          */
-        function saveOnlineDataValuesToLocalStorage(dataValues){
-            var promises = [],resource = "dataValues";
+        //@todo privilege issues to which to be persist online or oflline data
+        function saveOnlineDataValuesToLocalStorage(dataValues) {
+            var promises = [], resource = "dataValues";
             var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
             var period = $scope.data.dataEntryFormParameter.period.iso;
             var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
             var index = 1;
             dataValues.forEach(function (dataValue) {
                 var data = {
-                    id: dataSetId + '-' +dataValue.dataElement + '-'+dataValue.categoryOptionCombo+'-'+period+ '-' +orgUnitId,
+                    id: dataSetId + '-' + dataValue.dataElement + '-' + dataValue.categoryOptionCombo + '-' + period + '-' + orgUnitId,
                     de: dataValue.dataElement,
                     co: dataValue.categoryOptionCombo,
                     pe: period,
@@ -907,9 +909,9 @@ angular.module('app.controllers', [])
                 };
                 promises.push(
                     sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
-                        var savingPercentage = ((index/dataValues.length) * 100).toFixed(2);
-                        setProgressMessage('Saving data values to localStorage ' + savingPercentage  + '%');
-                        index ++;
+                        var savingPercentage = ((index / dataValues.length) * 100).toFixed(2);
+                        setProgressMessage('Saving data values to localStorage ' + savingPercentage + '%');
+                        index++;
                     }, function () {
                     })
                 );
@@ -926,20 +928,20 @@ angular.module('app.controllers', [])
         /**
          * loadingDataValuesFromLocalStorage
          */
-        function loadingDataValuesFromLocalStorage(){
+        function loadingDataValuesFromLocalStorage() {
             setProgressMessage('Checking for data values from localStorage');
-            var ids = [],resource = "dataValues";
+            var ids = [], resource = "dataValues";
             var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
             var period = $scope.data.dataEntryFormParameter.period.iso;
             var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
             $scope.data.entryFormMetadata.dataElements = {};
 
             //prepare ids for query to local storage
-            if($scope.data.selectedDataSet.dataElements){
-                $scope.data.selectedDataSet.dataElements.forEach(function(dataElement){
-                    if(dataElement.categoryCombo && dataElement.categoryCombo.categoryOptionCombos){
-                        dataElement.categoryCombo.categoryOptionCombos.forEach(function(categoryOptionCombo){
-                           ids.push(dataSetId + '-' +dataElement.id + '-'+categoryOptionCombo.id+'-'+period+ '-' +orgUnitId);
+            if ($scope.data.selectedDataSet.dataElements) {
+                $scope.data.selectedDataSet.dataElements.forEach(function (dataElement) {
+                    if (dataElement.categoryCombo && dataElement.categoryCombo.categoryOptionCombos) {
+                        dataElement.categoryCombo.categoryOptionCombos.forEach(function (categoryOptionCombo) {
+                            ids.push(dataSetId + '-' + dataElement.id + '-' + categoryOptionCombo.id + '-' + period + '-' + orgUnitId);
                         })
                     }
                     $scope.data.entryFormMetadata.dataElements[dataElement.id] = dataElement;
@@ -959,24 +961,27 @@ angular.module('app.controllers', [])
          * setDataValuesForDataEntryForm
          * @param dataValues
          */
-        function setDataValuesForDataEntryForm(dataValues){
+        function setDataValuesForDataEntryForm(dataValues) {
             $scope.data.selectedDataSetStorageStatus.online = 0;
             $scope.data.selectedDataSetStorageStatus.local = 0;
-            if(dataValues.length > 0){
+            if (dataValues.length > 0) {
                 $scope.data.entryFormMetadata.dataValues = {};
-                dataValues.forEach(function(dataValue){
-                    console.log(isDataElementHasDropDown(dataValue.de));
-                    var fieldId = dataValue.de + '-'+dataValue.co;
-                    $scope.data.entryFormMetadata.dataValues[fieldId] = shouldTypeCastToInteger(dataValue.de)? parseInt(dataValue.value) :isDataElementHasDropDown(dataValue.de)? {code :dataValue.value,name:'',id : ''}:dataValue.value;
-                    if(dataValue.syncStatus == "synced"){
-                        $scope.data.selectedDataSetStorageStatus.online ++;
-                    }else{
-                        $scope.data.selectedDataSetStorageStatus.local ++;
+                dataValues.forEach(function (dataValue) {
+                    var fieldId = dataValue.de + '-' + dataValue.co;
+                    $scope.data.entryFormMetadata.dataValues[fieldId] = shouldTypeCastToInteger(dataValue.de) ? parseInt(dataValue.value) : isDataElementHasDropDown(dataValue.de) ? {
+                        code: dataValue.value,
+                        name: '',
+                        id: ''
+                    } : $scope.isDate($scope.data.entryFormMetadata.dataElements[dataValue.de].valueType)? new Date(dataValue.value):dataValue.value;
+                    if (dataValue.syncStatus == "synced") {
+                        $scope.data.selectedDataSetStorageStatus.online++;
+                    } else {
+                        $scope.data.selectedDataSetStorageStatus.local++;
                     }
                     fieldId = null;
                 });
                 hideProgressMessage();
-            }else{
+            } else {
                 hideProgressMessage();
             }
         }
@@ -986,10 +991,10 @@ angular.module('app.controllers', [])
          * @param dataElementId
          * @returns {boolean}
          */
-        function isDataElementHasDropDown(dataElementId){
+        function isDataElementHasDropDown(dataElementId) {
             var result = false;
-            if($scope.data.entryFormMetadata.dataElements[dataElementId]){
-                if($scope.hasOptionSets($scope.data.entryFormMetadata.dataElements[dataElementId])){
+            if ($scope.data.entryFormMetadata.dataElements[dataElementId]) {
+                if ($scope.hasOptionSets($scope.data.entryFormMetadata.dataElements[dataElementId])) {
                     result = true;
                 }
             }
@@ -1001,33 +1006,169 @@ angular.module('app.controllers', [])
          * @param dataElementId
          * @returns {boolean}
          */
-        function shouldTypeCastToInteger(dataElementId){
+        function shouldTypeCastToInteger(dataElementId) {
             var dataElement = $scope.data.entryFormMetadata.dataElements[dataElementId];
             var result = false;
-            if($scope.isInteger(dataElement.valueType) && (!$scope.hasOptionSets(dataElement))){
-                result =true;
+            if ($scope.isInteger(dataElement.valueType) && (!$scope.hasOptionSets(dataElement))) {
+                result = true;
             }
-            if($scope.isIntegerZeroOrPositive(dataElement.valueType) && (!$scope.hasOptionSets(dataElement))){
-                result =true;
+            if ($scope.isIntegerZeroOrPositive(dataElement.valueType) && (!$scope.hasOptionSets(dataElement))) {
+                result = true;
             }
 
             return result;
         }
 
-        //@todo saving values and checking for extend functions
-        $scope.changeDataEntryForm = function(dataElement){
-            console.log(dataElement.name);
-            for(var key in $scope.data.entryFormMetadata.dataValues){
+        /**
+         * function to handle on changes on input fields of data entry forms
+         * changeDataEntryForm
+         * @param dataElement
+         */
+        $scope.changeDataEntryForm = function (dataElement) {
+            for (var key in $scope.data.entryFormMetadata.dataValues) {
                 var modelValue = key.split('-');
-                if(modelValue[0] == dataElement.id){
-                   console.log($scope.data.entryFormMetadata.dataValues[key]);
+                if (modelValue[0] == dataElement.id) {
+                    var value = $scope.data.entryFormMetadata.dataValues[key];
+                    if ($scope.data.entryFormMetadata.dataValues[key]) {
+                        var dataValue = {
+                            categoryOptionCombo: modelValue[1],
+                            dataElement: modelValue[0],
+                            value: value
+                        };
+                        saveIndividualDataValue(dataValue);
+                        if (dataElement.attributeValues.length > 0) {
+                            extendDataElementFunctions(dataElement, value);
+                        }
+                    }
                 }
             }
+        };
+
+        /**
+         * saveIndividualDataValue
+         * @param dataValue
+         */
+        function saveIndividualDataValue(dataValue) {
+            var ids = [], resource = "dataValues";
+            var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
+            var period = $scope.data.dataEntryFormParameter.period.iso;
+            var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
+            var id = dataSetId + '-' + dataValue.dataElement + '-' + dataValue.categoryOptionCombo + '-' + period + '-' + orgUnitId;
+            var value = null;
+            if(dataValue.value.code ){
+                value = dataValue.value.code;
+            }else{
+                value = dataValue.value;
+            }
+            value = String($scope.isDate($scope.data.entryFormMetadata.dataElements[dataValue.dataElement].valueType)? formatDate(value):value);
+            var data = {
+                id: id,
+                de: dataValue.dataElement,
+                co: dataValue.categoryOptionCombo,
+                pe: period,
+                ou: orgUnitId,
+                cc: $scope.data.dataEntryFormParameter.cc,
+                cp: $scope.data.dataEntryFormParameter.cp,
+                value: value,
+                syncStatus: 'not synced',
+                dataSetId: dataSetId
+            };
+            ids.push(id);
+            sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (dataValues) {
+                if(dataValues.length > 0){
+                    if(value != dataValues[0].value){
+                        console.log('can update');
+                        sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                            if($scope.data.selectedDataSetStorageStatus.online > 0){
+                                $scope.data.selectedDataSetStorageStatus.online --;
+                                $scope.data.selectedDataSetStorageStatus.local ++;
+                            }
+                        }, function () {
+                        })
+                    }else{
+                        console.log('can not update');
+                    }
+                }else{
+                    sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                        $scope.data.selectedDataSetStorageStatus.local ++;
+                    }, function () {
+                    })
+                }
+            }, function () {
+                //fail to get org units from local storage
+                Notification('Fail to get data value from local storage ');
+            });
+        }
+
+        /**
+         * extendDataElementFunctions
+         * @param dataElement
+         * @param value
+         */
+        function extendDataElementFunctions(dataElement, value) {
+            dataElement.attributeValues.forEach(function (attributeValue) {
+                if (attributeValue.attribute.name == 'extendFunction') {
+                    var attributeObject = eval("(" + attributeValue.value + ")");
+                    angular.extend(dataElement, attributeObject);
+                    var dataElementValue = angular.isUndefined(value.name) ? value : value.name;
+                    if (dataElement.events.onChange) {
+                        dataElement[dataElement.events.onChange](dataElementValue)
+                    }
+
+                    //for brn data boolean score values
+                    var correctScoreValue = null;
+                    console.log('input values ' + dataElementValue);
+                    angular.forEach(dataElement.scoreValues, function (scoreValue) {
+                        if (dataElementValue.toString() == scoreValue.value.toString()) {
+                            correctScoreValue = scoreValue.figure;
+                            console.log('correctScoreValue obtained : ' + correctScoreValue);
+                        }
+                    });
+                }
+            });
+        }
+
+        /**
+         * save value from extend function
+         * @param dataElementId
+         * @param categoryComboId
+         * @param value
+         */
+        function saveValue(dataElementId, categoryComboId, value) {
+
+            var dataValue = {
+                categoryOptionCombo: dataValue.categoryOptionCombo,
+                dataElement: dataValue.dataElement,
+                value: dataValue.value
+            };
+            saveIndividualDataValue(dataValue);
+        }
+
+        /**
+         * formatDate
+         * @param value
+         * @returns {string}
+         */
+        function formatDate(value){
+            var month,date = (new Date(value));
+            month = date.getMonth() + 1;
+            var formattedDate = date.getFullYear() + '-';
+            if(month > 9){
+                formattedDate = formattedDate + month + '-';
+            }else{
+                formattedDate = formattedDate + '0' + month + '-';
+            }
+            if(date.getDate() > 9){
+                formattedDate = formattedDate + date.getDate();
+            }else{
+                formattedDate = formattedDate + '0' +date.getDate();
+            }
+            return formattedDate;
         }
 
         /**
          * getSectionsObject
-         * @param section
+         * @param sections
          * @returns {{}}
          */
         function getSectionsObject(sections) {
@@ -1037,6 +1178,39 @@ angular.module('app.controllers', [])
             });
             return sectionsObject;
         }
+
+        /**
+         * sample extend variable
+         * @type {{scoreValues: *[], updateScoreValue: attributeValues.updateScoreValue, events: {onChange: string}}}
+         */
+        var attributeValues = {
+            scoreValues:[
+                {value:"Yes",figure:0},
+                {value:"Partial",figure:0},
+                {value:true,figure:0},
+                {value:"No",figure:0},
+                {value:"[No value]",figure:" "},
+                {value:"No value",figure:" "},
+                {value:"NA",figure:0}
+            ],
+            updateScoreValue:function (value){
+                var dataElementName = this.name+"_brn_scoreValue";
+                var scoreDataElement = getDataElementByName(dataElementName);
+                var correctScoreValue= null;
+                angular.forEach(this.scoreValues,function(scoreValue){
+                    if(value == scoreValue.value){
+                        correctScoreValue=scoreValue.figure;
+                    }
+                });
+                //@todo find mechanism of identify co-value for data element so far i just pick first category Option Combos as co-value
+                if(correctScoreValue != null && scoreDataElement != null){
+                    var de = scoreDataElement.id;
+                    var co = scoreDataElement.categoryCombo.categoryOptionCombos[0].id;
+                    saveValue(de,co,correctScoreValue);
+                }
+            },
+            events:{onChange:"updateScoreValue"}
+        };
 
     })
 
@@ -1321,7 +1495,7 @@ angular.module('app.controllers', [])
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            if($scope.data.sortedOrganisationUnits.length == 0){
+            if ($scope.data.sortedOrganisationUnits.length == 0) {
                 $timeout(function () {
                     setProgressMessage('Loading Organisation Units');
                     getUserAssignedOrgUnits();
@@ -1435,7 +1609,7 @@ angular.module('app.controllers', [])
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            if($scope.data.sortedOrganisationUnits.length == 0){
+            if ($scope.data.sortedOrganisationUnits.length == 0) {
                 $timeout(function () {
                     setProgressMessage('Loading Organisation Units');
                     getUserAssignedOrgUnits();

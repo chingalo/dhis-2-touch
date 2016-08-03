@@ -41,3 +41,8 @@
     height:400px;
     overflow:auto;
 }
+
+.item,.item-body{
+    border-radius: 4px;
+}
+

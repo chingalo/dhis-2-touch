@@ -3,6 +3,7 @@
         <div ng-repeat="categoryOptionCombos in dataElement.categoryCombo.categoryOptionCombos ">
             <div ng-if = "isInteger(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
                 {{ dataElement.name}}
+                <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="number"
                            placeholder="{{ dataElement.displayName }}"
@@ -11,6 +12,7 @@
             </div>
             <div ng-if = "isIntegerZeroOrPositive(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
                 {{ dataElement.name}}
+                <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="number" min="0"
                            placeholder="{{ dataElement.displayName }}"
@@ -19,6 +21,7 @@
             </div>
             <div ng-if = "isString(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
                 {{ dataElement.name}}
+                <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="text"
                            placeholder="{{ dataElement.displayName }}"
@@ -27,6 +30,7 @@
             </div>
             <div ng-if="isDate(dataElement.valueType)">
                 {{ dataElement.name}}
+                <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="date"
                            placeholder="{{ dataElement.displayName }}"
@@ -35,6 +39,7 @@
             </div>
             <div ng-if = "isBoolean(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
                 {{ dataElement.name}}
+                <br>
                 <div class="item item-input item-select">
                     <div class="input-label">
                     </div>
@@ -48,6 +53,7 @@
             </div>
             <div ng-if = "isTrueOnly(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
                 {{ dataElement.name}}
+                <br>
                 <div class="item item-input item-select">
                     <div class="input-label">
                     </div>
@@ -60,6 +66,7 @@
             </div>
             <div ng-if = "hasOptionSets(dataElement) " >
                 {{ dataElement.name}}
+                <br>
                 <div class="item item-input item-select">
                     <div class="input-label">
                     </div>
@@ -71,7 +78,7 @@
                 </div>
 
             </div>
-
         </div>
+        <br>
     </div>
 </div>
