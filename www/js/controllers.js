@@ -1077,7 +1077,6 @@ angular.module('app.controllers', [])
             sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (dataValues) {
                 if(dataValues.length > 0){
                     if(value != dataValues[0].value){
-                        console.log('can update');
                         sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
                             if($scope.data.selectedDataSetStorageStatus.online > 0){
                                 $scope.data.selectedDataSetStorageStatus.online --;
@@ -1085,8 +1084,6 @@ angular.module('app.controllers', [])
                             }
                         }, function () {
                         })
-                    }else{
-                        console.log('can not update');
                     }
                 }else{
                     sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
@@ -1135,11 +1132,10 @@ angular.module('app.controllers', [])
          * @param value
          */
         function saveValue(dataElementId, categoryComboId, value) {
-
             var dataValue = {
-                categoryOptionCombo: dataValue.categoryOptionCombo,
-                dataElement: dataValue.dataElement,
-                value: dataValue.value
+                categoryOptionCombo: categoryComboId,
+                dataElement: dataElementId,
+                value: value
             };
             saveIndividualDataValue(dataValue);
         }
@@ -1321,7 +1317,8 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('aboutCtrl', function ($scope, $localStorage,sqlLiteFactory) {
+    .controller('aboutCtrl', function ($scope, $localStorage,$timeout,
+                                       sqlLiteFactory,$ionicLoading) {
 
         //object for about controller
         $scope.data = {
@@ -1354,9 +1351,28 @@ angular.module('app.controllers', [])
             }
         };
 
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message) {
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage() {
+            $ionicLoading.hide();
+        }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            getSystemInformation();
+            $timeout(function () {
+                setProgressMessage('Loading App information');
+                getSystemInformation();
+            }, 100);
         });
 
 
@@ -1381,14 +1397,18 @@ angular.module('app.controllers', [])
 
         function getDataValuesStatus() {
             var resource = "dataValues";
+            setProgressMessage('Loading data values storage status');
             sqlLiteFactory.getDataFromTableByAttributes(resource, "syncStatus", ['synced']).then(function (syncedDataValues) {
-                console.log('syncedDataValues',syncedDataValues);
                 $scope.data.storageStatus.dataValues.synced.value = syncedDataValues.length;
                 sqlLiteFactory.getDataFromTableByAttributes(resource, "syncStatus", ['not synced']).then(function (notSyncedDataValues) {
-                    console.log('notSyncedDataValues', notSyncedDataValues);
                     $scope.data.storageStatus.dataValues.unSynced.value = notSyncedDataValues.length;
-                },function(){});
-            },function(){});
+                    hideProgressMessage();
+                },function(){
+                    hideProgressMessage();
+                });
+            },function(){
+                hideProgressMessage();
+            });
         }
 
         function getMetadataStatus(){
@@ -1513,12 +1533,12 @@ angular.module('app.controllers', [])
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            if ($scope.data.sortedOrganisationUnits.length == 0) {
-                $timeout(function () {
-                    setProgressMessage('Loading Organisation Units');
-                    getUserAssignedOrgUnits();
-                }, 100);
-            }
+            //if ($scope.data.sortedOrganisationUnits.length == 0) {
+            //    $timeout(function () {
+            //        setProgressMessage('Loading Organisation Units');
+            //        getUserAssignedOrgUnits();
+            //    }, 100);
+            //}
         });
 
         /**
