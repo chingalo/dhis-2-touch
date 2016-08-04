@@ -241,6 +241,34 @@ angular.module('app.services', [])
                     {value: 'dataElements', type: 'LONGTEXT'}
                 ]
             },
+            indicators: {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'name', type: 'TEXT'},
+                    {value: 'denominatorDescription', type: 'TEXT'},
+                    {value: 'numeratorDescription', type: 'TEXT'},
+                    {value: 'numerator', type: 'TEXT'},
+                    {value: 'denominator', type: 'TEXT'},
+                    {value: 'indicatorType', type: 'LONGTEXT'}
+                ]
+            },
+            reports: {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'name', type: 'TEXT'},
+                    {value: 'created', type: 'TEXT'},
+                    {value: 'type', type: 'TEXT'},
+                    {value: 'relativePeriods', type: 'LONGTEXT'},
+                    {value: 'reportParams', type: 'LONGTEXT'},
+                    {value: 'designContent', type: 'LONGTEXT'}
+                ]
+            },
+            constants: {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'value', type: 'TEXT'}
+                ]
+            },
             dataValues : {
                 fields: [
                     {value: 'id', type: 'TEXT'},

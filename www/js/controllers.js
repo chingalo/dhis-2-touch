@@ -1321,14 +1321,14 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('aboutCtrl', function ($scope, $localStorage) {
+    .controller('aboutCtrl', function ($scope, $localStorage,sqlLiteFactory) {
 
         //object for about controller
         $scope.data = {
             appInformation: {
                 Name: 'DHIS 2 Touch',
                 Version: '1.01',
-                'App revision': '3e8e302',
+                'App revision': 'd5950ae',
                 'Release status': 'Snapshot'
                 //'Release' 'Snapshot'
             },
@@ -1355,6 +1355,11 @@ angular.module('app.controllers', [])
         };
 
 
+        $scope.$on("$ionicView.afterEnter", function (event, data) {
+            getSystemInformation();
+        });
+
+
         /**
          * getSystemInfoName
          * @param key
@@ -1371,11 +1376,24 @@ angular.module('app.controllers', [])
             if (angular.isDefined($localStorage.app)) {
                 $scope.data.systemInformation = $localStorage.app.systemInformation;
             }
+            getDataValuesStatus();
         }
 
-        $scope.$on("$ionicView.afterEnter", function (event, data) {
-            getSystemInformation();
-        });
+        function getDataValuesStatus() {
+            var resource = "dataValues";
+            sqlLiteFactory.getDataFromTableByAttributes(resource, "syncStatus", ['synced']).then(function (syncedDataValues) {
+                console.log('syncedDataValues',syncedDataValues);
+                $scope.data.storageStatus.dataValues.synced.value = syncedDataValues.length;
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "syncStatus", ['not synced']).then(function (notSyncedDataValues) {
+                    console.log('notSyncedDataValues', notSyncedDataValues);
+                    $scope.data.storageStatus.dataValues.unSynced.value = notSyncedDataValues.length;
+                },function(){});
+            },function(){});
+        }
+
+        function getMetadataStatus(){
+
+        }
     })
 
     .controller('settingsCtrl', function ($scope) {
