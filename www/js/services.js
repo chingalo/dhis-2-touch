@@ -427,6 +427,35 @@ angular.module('app.services', [])
                 }
                 return defer.promise;
             },
+            getAllDataFromTable: function (tableName) {
+                var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+                var fields = dataBaseStructure[tableName].fields;
+                var db = null, values = [], defer = $q.defer(), databaseName = $localStorage.app.baseBaseName, query = "";
+                query += "SELECT * FROM " + tableName + ";";
+
+                if (window.cordova) {
+                    //for mobile devices
+                    db = $cordovaSQLite.openDB({name: databaseName, location: 'default'});
+                    $cordovaSQLite.execute(db, query, values).then(function (result) {
+                        defer.resolve(sqlLiteFactory.formatQueryReturnResult(result, fields));
+                    }, function () {
+                        defer.reject();
+                    });
+                }
+                else {
+                    //for browser
+                    var databaseNameArray = databaseName.split('.');
+                    db = window.openDatabase(databaseName, '1', databaseNameArray[0], 1024 * 1024 * 10000);
+                    db.transaction(function (tx) {
+                        tx.executeSql(query, values, function (tx, result) {
+                            defer.resolve(sqlLiteFactory.formatQueryReturnResult(result, fields));
+                        }, function (error) {
+                            defer.reject();
+                        });
+                    });
+                }
+                return defer.promise;
+            },
             formatQueryReturnResult: function (result, fields) {
                 var len = result.rows.length;
                 var data = [];

@@ -317,6 +317,9 @@ angular.module('app.controllers', [])
 
         }
 
+        /**
+         * downloadingDataSets
+         */
         function downloadingDataSets() {
             var resource = "dataSets";
             var fields = "id,name,timelyDays,formType,version,periodType,openFuturePeriods,expiryDays,dataElements[id,name,displayName,description,formName,attributeValues[value,attribute[name]],valueType,optionSet[name,options[name,id,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]],organisationUnits[id,name],sections[id],indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],categoryCombo[id,name,categoryOptionCombos[id,name,categoryOptions[id]],categories[id,name,categoryOptions[id,name]]]";
@@ -324,10 +327,13 @@ angular.module('app.controllers', [])
             systemFactory.downloadMetadata(resource, null, fields).then(function (dataSets) {
                 //success on downloading
                 var promises = [];
-                setProgressMessage('Saving data sets to local storage');
+                var index = 1;
                 dataSets[resource].forEach(function (data) {
                     promises.push(
                         sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                            var savingPercentage = ((index / dataSets[resource].length) * 100).toFixed(2);
+                            setProgressMessage('Saving data sets to local storage ' + savingPercentage + "%");
+                            index ++;
                         }, function () {
                         })
                     );
@@ -345,25 +351,28 @@ angular.module('app.controllers', [])
             })
         }
 
+        /**
+         * downloadingDataSetSections
+         */
         function downloadingDataSetSections() {
             var resource = "sections";
             var fields = "id,name,indicators[id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator],dataElements[id,name,formName,attributeValues[value,attribute[name]],categoryCombo[id,name,categoryOptionCombos[id,name]],displayName,description,valueType,optionSet[name,options[name,id,code]]";
             setProgressMessage('Downloading sections');
             systemFactory.downloadMetadata(resource, null, fields).then(function (sections) {
-                //success on downloading
-                setProgressMessage('Saving sections to local storage');
                 var promises = [];
+                var index = 1;
                 sections[resource].forEach(function (data) {
                     promises.push(
                         sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                            var savingPercentage = ((index / sections[resource].length) * 100).toFixed(2);
+                            setProgressMessage('Saving sections to local storage ' + savingPercentage + "%");
+                            index ++;
                         }, function () {
                         })
                     );
                 });
                 $q.all(promises).then(function () {
-                    $localStorage.app.user.isLogin = true;
-                    hideProgressMessage();
-                    $state.go('tabsController.apps', {}, {});
+                    downloadingReports();
                 }, function () {
                     hideProgressMessage();
                     Notification('Fail to save sections data');
@@ -374,6 +383,102 @@ angular.module('app.controllers', [])
                 Notification('Fail to download ' + resource);
             })
 
+        }
+
+        /**
+         * downloadingReports
+         */
+        function downloadingReports(){
+            var resource = "reports";
+            var fields = "id,name,created,type,relativePeriods,reportParams,designContent";
+            var filter = "type:eq:HTML&filter=name:like:mobile";
+            systemFactory.downloadMetadata(resource, null, fields,filter).then(function (response) {
+                var promises = [];
+                var index = 1;
+                response[resource].forEach(function (data) {
+                    promises.push(
+                        sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                            var savingPercentage = ((index / response[resource].length) * 100).toFixed(2);
+                            setProgressMessage('Saving Reports to local storage ' + savingPercentage + "%");
+                            index ++;
+                        }, function () {
+                        })
+                    );
+                });
+                $q.all(promises).then(function () {
+                    downloadingConstants();
+                }, function () {
+                    hideProgressMessage();
+                    Notification('Fail to save reports data');
+                });
+            }, function () {
+                hideProgressMessage();
+                Notification('Fail to download ' + resource);
+            });
+        }
+
+        /**
+         * downloadingConstants
+         */
+        function downloadingConstants(){
+            var resource = "constants";
+            var fields = "id,value";
+            systemFactory.downloadMetadata(resource, null, fields).then(function (response) {
+                var promises = [];
+                var index = 1;
+                response[resource].forEach(function (data) {
+                    promises.push(
+                        sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                            var savingPercentage = ((index / response[resource].length) * 100).toFixed(2);
+                            setProgressMessage('Saving constants to local storage ' + savingPercentage + "%");
+                            index ++;
+                        }, function () {
+                        })
+                    );
+                });
+                $q.all(promises).then(function () {
+                    downloadingIndicators();
+                }, function () {
+                    hideProgressMessage();
+                    Notification('Fail to save constants data');
+                });
+            }, function () {
+                hideProgressMessage();
+                Notification('Fail to download ' + resource);
+            });
+        }
+
+        /**
+         * downloadingIndicators
+         */
+        function downloadingIndicators(){
+            var resource = "indicators";
+            var fields = "id,name,indicatorType[factor],denominatorDescription,numeratorDescription,numerator,denominator";
+            systemFactory.downloadMetadata(resource, null, fields).then(function (response) {
+                var promises = [];
+                var index = 1;
+                response[resource].forEach(function (data) {
+                    promises.push(
+                        sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                            var savingPercentage = ((index / response[resource].length) * 100).toFixed(2);
+                            setProgressMessage('Saving indicators to local storage ' + savingPercentage + "%");
+                            index ++;
+                        }, function () {
+                        })
+                    );
+                });
+                $q.all(promises).then(function () {
+                    $localStorage.app.user.isLogin = true;
+                    hideProgressMessage();
+                    $state.go('tabsController.apps', {}, {});
+                }, function () {
+                    hideProgressMessage();
+                    Notification('Fail to save indicators data');
+                });
+            }, function () {
+                hideProgressMessage();
+                Notification('Fail to download ' + resource);
+            });
         }
 
         /**
@@ -423,7 +528,8 @@ angular.module('app.controllers', [])
                 },
                 attributeOptionCombo: "",
                 cc: "",
-                cp: ""
+                cp: "",
+                hasFormLoaded : false
             },
             dataDimensionIndex: 0
         };
@@ -658,6 +764,7 @@ angular.module('app.controllers', [])
                 $scope.data.dataEntryForm.dataSetId = $scope.data.selectedDataSetForm.id;
                 $scope.data.dataEntryForm.period.iso = $scope.data.selectedPeriod.iso;
                 $scope.data.dataEntryForm.period.name = $scope.data.selectedPeriod.name;
+                $scope.data.dataEntryForm.hasFormLoaded = false;
                 $localStorage.app.dataEntryForm = $scope.data.dataEntryForm;
                 $state.go('tabsController.dataEntryForm', {}, {});
             } else {
@@ -866,21 +973,26 @@ angular.module('app.controllers', [])
          * downLoadingDataValuesFromServer
          */
         function downLoadingDataValuesFromServer() {
-            var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
-            var period = $scope.data.dataEntryFormParameter.period.iso;
-            var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
-            var attributeOptionCombo = $scope.data.dataEntryFormParameter.attributeOptionCombo;
-            setProgressMessage('Downloading data values from the server');
-            dataValuesFactory.getDataValueSet(dataSetId, period, orgUnitId, attributeOptionCombo).then(function (dataValues) {
-                if (dataValues.length > 0) {
-                    saveOnlineDataValuesToLocalStorage(dataValues);
-                } else {
-                    loadingDataValuesFromLocalStorage();
-                }
-            }, function () {
+            if($localStorage.app.dataEntryForm.hasFormLoaded){
                 loadingDataValuesFromLocalStorage();
-                Notification('Fail to download data values from the server');
-            });
+            }else{
+                var dataSetId = $scope.data.dataEntryFormParameter.dataSetId;
+                var period = $scope.data.dataEntryFormParameter.period.iso;
+                var orgUnitId = $scope.data.dataEntryFormParameter.organisationUnitId;
+                var attributeOptionCombo = $scope.data.dataEntryFormParameter.attributeOptionCombo;
+                setProgressMessage('Downloading data values from the server');
+                dataValuesFactory.getDataValueSet(dataSetId, period, orgUnitId, attributeOptionCombo).then(function (dataValues) {
+                    if (dataValues.length > 0) {
+                        saveOnlineDataValuesToLocalStorage(dataValues);
+                    } else {
+                        loadingDataValuesFromLocalStorage();
+                    }
+                }, function () {
+                    loadingDataValuesFromLocalStorage();
+                    Notification('Fail to download data values from the server');
+                });
+            }
+
         }
 
         /**
@@ -918,6 +1030,7 @@ angular.module('app.controllers', [])
             });
 
             $q.all(promises).then(function () {
+                $localStorage.app.dataEntryForm.hasFormLoaded = true;
                 loadingDataValuesFromLocalStorage();
             }, function () {
                 loadingDataValuesFromLocalStorage();
@@ -1751,5 +1864,11 @@ angular.module('app.controllers', [])
 
     .controller('settingDetailsCtrl', function ($scope) {
 
+    })
+
+    .controller('updateManagerCtrl', function ($scope) {
+        $scope.$on("$ionicView.afterEnter", function (event, data) {
+            console.log('update manager view has been loaded successfully');
+        });
     });
  

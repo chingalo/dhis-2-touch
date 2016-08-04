@@ -13,8 +13,16 @@
             <ion-item class="item-divider " id="about-list-item-divider3">Storage information</ion-item>
         </ion-list>
         <div class="item item-body " id="about-list-item-container23">
-            <p id="about-markdown38" style="margin-top:0px;color:#000000;" class=" ">Storage information to come</p>
-            <p>{{ data.storageStatus |json }}</p>
+            <ion-list >
+                <ion-item class="item-divider " >DataValues Storage status</ion-item>
+            </ion-list>
+            <div class="item item-body ">
+                <p>
+                    <b style="margin-top:0px;color:#000000;">Synced</b> : {{ data.storageStatus.dataValues.synced.value }}&nbsp;&nbsp;
+                    <b style="margin-top:0px;color:#000000;">Not Synced</b> : {{ data.storageStatus.dataValues.unSynced.value }}
+                </p>
+
+            </div>
         </div>
 
         <ion-list id="about-list21" class=" ">
