@@ -23,6 +23,9 @@
                         {{ sortedOrganisationUnit.name }}
                     </ion-item>
                 </ion-list>
+                <ion-item ng-if = "data.sortedOrganisationUnits.length == 0">
+                    There is no Organisation Unit to select
+                </ion-item>
             </div>
         </div>
     </ion-content>

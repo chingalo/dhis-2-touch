@@ -22,6 +22,9 @@
                     <ion-item ng-repeat=" assignedDataSetForm in data.assignedDataSetForms|filter: {name  :search}"  ng-click="setSelectedDataSetForm(assignedDataSetForm)">
                         {{ assignedDataSetForm.name }}
                     </ion-item>
+                    <ion-item ng-if = "data.assignedDataSetForms.length == 0">
+                        There is no Data entry form to select
+                    </ion-item>
                 </ion-list>
             </div>
         </div>

@@ -22,6 +22,9 @@
                         {{ period.name }}
                     </ion-item>
                 </ion-list>
+                <ion-item ng-if = "data.selectedDataSetFormPeriod.length == 0">
+                    There is no period to select
+                </ion-item>
             </div>
         </div>
     </ion-content>

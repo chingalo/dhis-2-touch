@@ -23,6 +23,9 @@
                         {{ categoryOption.name }}
                     </ion-item>
                 </ion-list>
+                <ion-item ng-if = "data.selectedDataSetForm.categoryCombo.categories[data.dataDimensionIndex].categoryOptions.length == 0">
+                    There is no Data entry form category option to select
+                </ion-item>
             </div>
         </div>
     </ion-content>

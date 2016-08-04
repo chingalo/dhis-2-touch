@@ -18,7 +18,7 @@
             </div>
 
             <div ng-if = "data.formRenderingType == 'SECTION'">
-                <div ng-repeat="section in data.selectedDataSetSections">
+                <div ng-repeat="section in data.selectedDataSetSections | paginationFilter: data.pagination.currentPage*data.pagination.pageSize | limitTo:data.pagination.pageSize">
                     <div class="item item-divider">
                         {{ section.name }}
                     </div>
@@ -35,13 +35,6 @@
             <div ng-include="'templates/entryFormPartials/pagination.html'"></div>
         </div>
 
-        <div class="item item-body " id="dataEntryForm-list-item-container19">
-            <p id="dataEntryForm-markdown29" style="margin-top:0px;color:#000000;" class=" "></p>
-            <div id="dataEntryForm-button-bar4" class=" button-bar ">
-                <button id="dataEntryForm-button18" style="border-radius:5px 5px 5px 5px;" class=" button button-positive  button-block button-outline ">Previous</button>
-                <button id="dataEntryForm-button20" class=" button button-positive  button-block button-outline ">Next</button>
-            </div>
-        </div>
         <div class="spacer" style="width: 300px; height: 17px;"></div>
         <div class="item item-body " id="dataEntryForm-list-item-container20">
             <div id="dataEntryForm-button-bar5" class=" button-bar "></div>

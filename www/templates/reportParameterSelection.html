@@ -1,8 +1,10 @@
 <ion-view title="Report Parameter Selection" id="page15" style="background-color:#F5F5F5;" class=" ">
     <ion-content padding="true" class="has-header">
+        <ion-list >
+            <ion-item class="item-divider ">{{ data.selectedReport.name }}</ion-item>
+        </ion-list>
         <div class="item item-body " id="reportParameterSelection-list-item-container4">
-
-            <div class="row" ng-click="organisationUnitsModal.show()" style="padding-top: 1%;">
+            <div class="row" ng-click="organisationUnitsModal.show()" style="padding-top: 1%;" ng-if = "data.selectedReport.reportParams.paramOrganisationUnit" >
                 <div class="col col-100">
                     <p ng-if ="data.selectedOrganisationUnit.id">
                         {{ data.selectedOrganisationUnit.name }}
@@ -12,20 +14,16 @@
                     </p>
                 </div>
             </div>
-
             <div class="spacer" style="width: 267.333px; height: 14px;"></div>
-            <div class="row" ng-click="periodModal.show()" style="padding-top: 1%;">
+            <div class="row" ng-click="periodModal.show()" style="padding-top: 1%;" ng-if = "data.selectedReport.reportParams.paramReportingPeriod" >
                 <div class="col col-100">
                     <p>Touch to select period</p>
                 </div>
             </div>
+
             <a ui-sref="tabsController.reportView" id="reportParameterSelection-button2" class=" button button-positive  button-block button-outline ">Generate Report</a>
         </div>
         <div id="reportParameterSelection-button-bar1" class=" button-bar "></div>
-
-        <div class="item item-body " ng-if = "data.isLoadingData" style="text-align: center;font-size: 14px;">
-            <three-bounce-spinner></three-bounce-spinner>
-        </div>
 
     </ion-content>
 </ion-view>

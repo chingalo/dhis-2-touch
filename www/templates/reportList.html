@@ -1,21 +1,11 @@
 <ion-view title="Report List" id="page13" style="background-color:#F5F5F5;" class=" ">
     <ion-content padding="true" class="has-header">
-        <div class="spacer" style="width: 300px; height: 21px;"></div>
-        <ion-list id="reportList-list10" class=" ">
-            <ion-item id="reportList-list-item19" ui-sref="tabsController.reportParameterSelection" class="  ">Dispensary Score Card</ion-item>
-        </ion-list>
-        <div class="spacer" style="width: 300px; height: 13px;"></div>
-        <ion-list id="reportList-list15" class=" ">
-            <ion-item id="reportList-list-item20" ui-sref="tabsController.reportParameterSelection" class="  ">Dispensary Score Card Detail</ion-item>
-        </ion-list>
-        <div class="spacer" style="width: 300px; height: 13px;"></div>
-        <ion-list id="reportList-list18" class=" ">
-            <ion-item id="reportList-list-item21" ui-sref="tabsController.reportParameterSelection" class="  ">Health Center Score Card</ion-item>
-        </ion-list>
-        <div class="spacer" style="width: 300px; height: 12px;"></div>
-        <ion-list id="reportList-list19" class=" ">
-            <ion-item id="reportList-list-item22" ui-sref="tabsController.reportParameterSelection" class="  ">Hospital Score Card</ion-item>
-        </ion-list>
-        <div class="spacer" style="width: 300px; height: 40px;"></div>
+        <div ng-repeat="report in data.reportList">
+            <ion-item class="item-icon-right" ng-click="setSelectedReport(report.id)">
+                {{ report.name }}
+                <i class="icon ion-ios-arrow-right"></i>
+            </ion-item>
+            <div class="spacer" style="width: 100%; height: 5px;"></div>
+        </div>
     </ion-content>
 </ion-view>

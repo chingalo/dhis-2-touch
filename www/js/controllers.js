@@ -17,6 +17,9 @@ angular.module('app.controllers', [])
                 userData: {},
                 systemInformation: {},
                 dataEntryForm: {},
+                report:{
+                    selectedReport : {}
+                },
                 allOrgUnitData: {}
             }
         }
@@ -629,6 +632,7 @@ angular.module('app.controllers', [])
                     $scope.data.selectedDataSetForm = {};
                     $scope.data.selectedDataSetFormDimension = {};
                     $scope.data.selectedPeriod = {};
+                    $scope.data.selectedDataSetFormPeriod = [];
                     $scope.data.selectedOrganisationUnit = {
                         id: selectedOrganisationUnit.id,
                         name: selectedOrganisationUnit.name,
@@ -867,7 +871,13 @@ angular.module('app.controllers', [])
             dataEntryFormParameter: {},
             selectedOrgUnitObject: {},
             selectedPeriod: {},
-            selectedDataSetSections: []
+            selectedDataSetSections: [],
+            pagination : {
+                currentPage : 0,
+                pageSize : 0,
+                numberOfPages : 0
+
+            }
         };
 
         /**
@@ -945,6 +955,8 @@ angular.module('app.controllers', [])
             if ($scope.data.selectedDataSet.sections.length > 0) {
                 $scope.data.selectedDataSetSections = [];
                 $scope.data.formRenderingType = "SECTION";
+                $scope.data.pagination.pageSize = 1;
+                $scope.data.pagination.numberOfPages = $scope.data.selectedDataSet.sections.length;
                 var ids = [], resource = "sections";
                 $scope.data.selectedDataSet.sections.forEach(function (section) {
                     ids.push(section.id);
@@ -965,9 +977,26 @@ angular.module('app.controllers', [])
                 });
             } else {
                 $scope.data.formRenderingType = 'DEFAULT';
+                $scope.data.pagination.pageSize = 5;
+                $scope.data.pagination.numberOfPages =Math.ceil($scope.data.selectedDataSet.dataElements.length/$scope.data.pagination.pageSize);
                 downLoadingDataValuesFromServer();
             }
         }
+
+        /**
+         * navigateToNewPagination
+         * @param currentPageNumber
+         * @param type
+         */
+        $scope.navigateToNewPagination = function(currentPageNumber, type){
+            if (type == 'last') {
+                $scope.data.pagination.currentPage = $scope.data.pagination.numberOfPages - 1;
+            }else{
+                setProgressMessage('navigate to ' + currentPageNumber + 1);
+                $scope.data.pagination.currentPage = currentPageNumber
+            }
+            hideProgressMessage();
+        };
 
         /**
          * downLoadingDataValuesFromServer
@@ -1590,8 +1619,14 @@ angular.module('app.controllers', [])
 
     })
 
-    .controller('reportListCtrl', function ($scope, $ionicLoading, $timeout) {
+    .controller('reportListCtrl', function ($scope, $ionicLoading,Notification,
+                                            $localStorage,$state,
+                                            $timeout,sqlLiteFactory) {
 
+        $scope.data = {
+            reportList : [],
+            reportListObject : {}
+        };
 
         /**
          * setProgressMessage
@@ -1612,9 +1647,59 @@ angular.module('app.controllers', [])
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
             $timeout(function () {
-                console.log("Populate report list")
+                getReportList();
             }, 100);
         });
+
+        /**
+         * getReportList
+         */
+        function getReportList(){
+            var resource = "reports";
+            setProgressMessage('Loading reports from local storage');
+            $scope.data.reportList = [];
+            sqlLiteFactory.getAllDataFromTable(resource).then(function(reports){
+                reports.forEach(function(report){
+                    $scope.data.reportList.push({
+                        id : report.id,
+                        name : report.name,
+                        created : report.created
+                    });
+                    $scope.data.reportListObject[report.id] = {
+                        name : report.name,
+                        reportParams : report.reportParams,
+                        relativePeriods : report.relativePeriods
+                    }
+                });
+                hideProgressMessage();
+            },function(){
+                hideProgressMessage();
+                Notification('Fail to load reports from local storage');
+            })
+        }
+
+
+        /**
+         * setSelectedReport
+         * @param reportId
+         */
+        $scope.setSelectedReport = function(reportId){
+            var report = $scope.data.reportListObject[reportId];
+            console.log(report);
+            $localStorage.app.report = {};
+            $localStorage.app.report.selectedReport ={
+                id : reportId,
+                name : report.name,
+                reportParams : report.reportParams,
+                relativePeriods : report.relativePeriods
+            } ;
+            if(report.reportParams.paramOrganisationUnit || report.reportParams.paramReportingPeriod){
+                $state.go('tabsController.reportParameterSelection', {}, {});
+            }else{
+                $state.go('tabsController.reportView', {}, {});
+            }
+
+        };
 
     })
 
@@ -1736,10 +1821,11 @@ angular.module('app.controllers', [])
                                                           $ionicModal, $ionicLoading, $timeout, userFactory,
                                                           sqlLiteFactory, organisationUnitFactory) {
         //object for data entry selection screen
+        //@todo handling actions after report parameter selections
         $scope.data = {
-            isLoadingData: false,
             sortedOrganisationUnits: [],
-            selectedOrganisationUnit: {}
+            selectedOrganisationUnit: {},
+            selectedReport: {}
         };
 
         /**
@@ -1764,6 +1850,7 @@ angular.module('app.controllers', [])
                 $timeout(function () {
                     setProgressMessage('Loading Organisation Units');
                     getUserAssignedOrgUnits();
+                    getSelectedReportDetails();
                 }, 100);
             }
         });
@@ -1836,6 +1923,11 @@ angular.module('app.controllers', [])
             console.log($scope.data.selectedOrganisationUnit);
             $scope.organisationUnitsModal.hide();
         };
+
+        function getSelectedReportDetails(){
+            $scope.data.selectedReport = $localStorage.app.report.selectedReport;
+            console.log($localStorage.app.report.selectedReport);
+        }
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
             scope: $scope
