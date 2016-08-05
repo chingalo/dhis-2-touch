@@ -12,6 +12,7 @@ angular.module('app', ['ionic',
         'ui-notification',
         'app.routes',
         'app.services',
+        'ui.date',
         'angular-spinkit',
         'app.directives'])
 
