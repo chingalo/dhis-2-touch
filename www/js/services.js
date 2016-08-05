@@ -513,6 +513,45 @@ angular.module('app.services', [])
                     defer.reject(error.status);
                 });
                 return defer.promise;
+            },
+            getDataSetCompletenessInfo : function(dataSet,period,orgUnit,cc,cp){
+                var defer = $q.defer();
+                var parameter = 'dataSetId='+dataSet+'&periodId='+period+'&organisationUnitId='+orgUnit;
+                if(cc != ""){
+                    parameter += "&cc="+cc+"&cp="+cp
+                }
+                $http.get($localStorage.app.baseUrl + '/dhis-web-dataentry/getDataValues.action?'+parameter)
+                    .success(function(results){
+                        defer.resolve(results);
+                    })
+                    .error(function(){
+                        defer.reject();
+                    });
+                return defer.promise;
+            },
+            completeOnDataSetRegistrations:function(parameter){
+                var defer = $q.defer();
+                $http.post($localStorage.app.baseUrl+'/api/completeDataSetRegistrations?'+parameter,null)
+                    .then(function(){
+                        //success
+                        defer.resolve();
+                    },function(){
+                        //error
+                        defer.reject();
+                    });
+                return defer.promise;
+            },
+            unDoCompleteOnDataSetRegistrations:function(parameter){
+                var defer = $q.defer();
+                $http.delete($localStorage.app.baseUrl+'/api/completeDataSetRegistrations?'+parameter,null)
+                    .then(function(){
+                        //success
+                        defer.resolve();
+                    },function(){
+                        //error
+                        defer.reject();
+                    });
+                return defer.promise;
             }
         };
         return systemFactory;

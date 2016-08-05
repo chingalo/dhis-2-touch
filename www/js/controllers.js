@@ -854,7 +854,7 @@ angular.module('app.controllers', [])
 
     .controller('dataEntryFormCtrl', function ($scope, $localStorage,
                                                $ionicLoading, Notification,
-                                               dataValuesFactory, $q,
+                                               dataValuesFactory, $q,systemFactory,
                                                appFactory, sqlLiteFactory, $timeout) {
 
         $scope.data = {
@@ -864,6 +864,8 @@ angular.module('app.controllers', [])
                 local: 0
             },
             entryFormMetadata: {
+                isDataSetCompleted: false,
+                dataSetCompleteness : {},
                 dataElements: {},
                 dataValues: {}
             },
@@ -1002,6 +1004,7 @@ angular.module('app.controllers', [])
          * downLoadingDataValuesFromServer
          */
         function downLoadingDataValuesFromServer() {
+            loadingDataSetCompletenessForm();
             if($localStorage.app.dataEntryForm.hasFormLoaded){
                 loadingDataValuesFromLocalStorage();
             }else{
@@ -1099,6 +1102,25 @@ angular.module('app.controllers', [])
             });
         }
 
+        function loadingDataSetCompletenessForm(){
+            $scope.data.entryFormMetadata.isDataSetCompleted = false;
+            $scope.data.entryFormMetadata.dataSetCompleteness = {};
+            var dataSet = $scope.data.dataEntryFormParameter.dataSetId;
+            var period = $scope.data.dataEntryFormParameter.period.iso;
+            var orgUnit = $scope.data.dataEntryFormParameter.organisationUnitId;
+            var cc = $scope.data.dataEntryFormParameter.cp;
+            var cp = $scope.data.dataEntryFormParameter.cp;
+            systemFactory.getDataSetCompletenessInfo(dataSet,period,orgUnit,cc,cp).then(function(dataSetCompletenessInfo){
+                if(dataSetCompletenessInfo.complete){
+                    $scope.data.entryFormMetadata.isDataSetCompleted = dataSetCompletenessInfo.complete;
+                    $scope.data.entryFormMetadata.dataSetCompleteness = {
+                        name : dataSetCompletenessInfo.storedBy,
+                        date : dataSetCompletenessInfo.date
+                    }
+                }
+            },function(){});
+        }
+
         /**
          * setDataValuesForDataEntryForm
          * @param dataValues
@@ -1185,6 +1207,59 @@ angular.module('app.controllers', [])
                 }
             }
         };
+
+
+        /**
+         * completeDataEntryForm
+         */
+        $scope.completeDataEntryForm = function(){
+            var parameter = getDatSetCompletenessParameter();
+            setProgressMessage('Please wait, while complete dataset form');
+            systemFactory.completeOnDataSetRegistrations(parameter).then(function(){
+                loadingDataSetCompletenessForm();
+                $timeout(function(){
+                    hideProgressMessage();
+                },100);
+            },function(){
+                hideProgressMessage();
+                Notification('Fail to complete dataset form');
+            });
+        };
+
+        /**
+         * unCompleteDataEntryForm
+         */
+        $scope.unCompleteDataEntryForm = function(){
+            var parameter = getDatSetCompletenessParameter();
+            setProgressMessage('Please wait, while undo completion of dataset form');
+            systemFactory.unDoCompleteOnDataSetRegistrations(parameter).then(function(){
+                $scope.data.entryFormMetadata.isDataSetCompleted = false;
+                $scope.data.entryFormMetadata.dataSetCompleteness = {};
+                hideProgressMessage();
+            },function(){
+                hideProgressMessage();
+                Notification('Fail to undo completion of dataset form');
+            });
+        };
+
+
+        /**
+         * getDatSetCompletenessParameter
+         * @returns {string}
+         */
+        function getDatSetCompletenessParameter(){
+            var dataSet = $scope.data.dataEntryFormParameter.dataSetId;
+            var period = $scope.data.dataEntryFormParameter.period.iso;
+            var orgUnit = $scope.data.dataEntryFormParameter.organisationUnitId;
+            var cc = $scope.data.dataEntryFormParameter.cp;
+            var cp = $scope.data.dataEntryFormParameter.cp;
+            var parameter = "ds="+dataSet+"&pe="+period+"&ou="+orgUnit;
+            if(cc != ""){
+                parameter += "&cc="+cc+"&cp="+cp;
+            }
+            return parameter;
+        }
+
 
         /**
          * saveIndividualDataValue

@@ -37,13 +37,28 @@
 
         <div class="spacer" style="width: 300px; height: 17px;"></div>
         <div class="item item-body " id="dataEntryForm-list-item-container20">
-            <div id="dataEntryForm-button-bar5" class=" button-bar "></div>
-            <div id="dataEntryForm-button-bar6" class=" button-bar ">
-                <button id="dataEntryForm-button24" style="border-radius:5px 5px 5px 5px;" class=" button button-positive  button-block button-outline ">First</button>
-                <button id="dataEntryForm-button26" style="border-radius:5px 5px 5px 5px;" class=" button button-positive  button-block button-outline ">Last</button>
+            <div class="row">
+                <div class="col col-50" ng-if="!data.entryFormMetadata.isDataSetCompleted">
+                    <button class="button button-full button-balanced" ng-click="completeDataEntryForm()">Complete
+                    </button>
+                </div>
+                <div class="col col-50" ng-if="data.entryFormMetadata.isDataSetCompleted">
+                    <button class="button button-full button-assertive" ng-click="unCompleteDataEntryForm()">Undo
+                        Complete
+                    </button>
+                    <br>
+                </div>
+                <div class="col col-25">
+                    <button class="button button-full button-positive" ng-click="navigateToNewPagination(0,'')">First</button>
+                </div>
+                <div class="col col-25">
+                    <button class="button button-full button-positive" ng-click="navigateToNewPagination(0,'last')">Last
+                    </button>
+                </div>
             </div>
-            <button id="dataEntryForm-button21" style="border-radius:5px 5px 5px 5px;" class=" button button-balanced  button-block ">Complete</button>
-            <p id="dataEntryForm-markdown32" style="color:#000000;" class=" ">Compeletd by user at 2016-06-23</p>
+            <p  ng-if="data.entryFormMetadata.isDataSetCompleted" align="center">
+                Completed by: <b>{{ data.entryFormMetadata.dataSetCompleteness .name}}</b> at: <b>{{data.entryFormMetadata.dataSetCompleteness .date }}</b>
+            </p>
         </div>
     </ion-content>
 </ion-view>
