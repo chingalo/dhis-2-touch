@@ -2,7 +2,7 @@
     <div ng-repeat="dataElement in data.selectedDataSet.dataElements | paginationFilter: data.pagination.currentPage*data.pagination.pageSize| limitTo:data.pagination.pageSize" >
         <div ng-repeat="categoryOptionCombos in dataElement.categoryCombo.categoryOptionCombos ">
             <div ng-if = "isInteger(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
-                {{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;
+                <span class="tooltip tooltipSize" title="{{ dataElement.description }}" animation="fade"><b>{{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;</b> <i class="icon ion-ios-help-outline help-icons-data-entry" ng-show="dataElement.description"></i></b></span></span>
                 <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="number"
@@ -11,7 +11,7 @@
                 </label>
             </div>
             <div ng-if = "isIntegerZeroOrPositive(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
-                {{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;
+                <span class="tooltip tooltipSize" title="{{ dataElement.description }}" animation="fade"><b>{{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;</b> <i class="icon ion-ios-help-outline help-icons-data-entry" ng-show="dataElement.description"></i></b></span></span>
                 <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="number" min="0"
@@ -20,7 +20,7 @@
                 </label>
             </div>
             <div ng-if = "isString(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
-                {{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;
+                <span class="tooltip tooltipSize" title="{{ dataElement.description }}" animation="fade"><b>{{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;</b> <i class="icon ion-ios-help-outline help-icons-data-entry" ng-show="dataElement.description"></i></b></span></span>
                 <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="text"
@@ -29,7 +29,7 @@
                 </label>
             </div>
             <div ng-if="isDate(dataElement.valueType)">
-                {{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;
+                <span class="tooltip tooltipSize" title="{{ dataElement.description }}" animation="fade"><b>{{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;</b> <i class="icon ion-ios-help-outline help-icons-data-entry" ng-show="dataElement.description"></i></b></span></span>
                 <br>
                 <label class="item item-input">
                     <input ng-blur='changeDataEntryForm(dataElement)' type="date"
@@ -38,7 +38,7 @@
                 </label>
             </div>
             <div ng-if = "isBoolean(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
-                {{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;
+                <span class="tooltip tooltipSize" title="{{ dataElement.description }}" animation="fade"><b>{{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;</b> <i class="icon ion-ios-help-outline help-icons-data-entry" ng-show="dataElement.description"></i></b></span></span>
                 <br>
                 <div class="item item-input item-select">
                     <div class="input-label">
@@ -52,7 +52,7 @@
                 </div>
             </div>
             <div ng-if = "isTrueOnly(dataElement.valueType) && (!hasOptionSets(dataElement)) " >
-                {{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;
+                <span class="tooltip tooltipSize" title="{{ dataElement.description }}" animation="fade"><b>{{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;</b> <i class="icon ion-ios-help-outline help-icons-data-entry" ng-show="dataElement.description"></i></b></span></span>
                 <br>
                 <div class="item item-input item-select">
                     <div class="input-label">
@@ -65,7 +65,7 @@
                 </div>
             </div>
             <div ng-if = "hasOptionSets(dataElement) " >
-                {{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;
+                <span class="tooltip tooltipSize" title="{{ dataElement.description }}" animation="fade"><b>{{ dataElement.name}}<span ng-if="dataElement.categoryCombo.name != 'default'">&nbsp;&nbsp;{{ categoryOptionCombos.name}}</span>&nbsp;&nbsp;</b> <i class="icon ion-ios-help-outline help-icons-data-entry" ng-show="dataElement.description"></i></b></span></span>
                 <br>
                 <div class="item item-input item-select">
                     <div class="input-label">
@@ -78,6 +78,7 @@
                 </div>
 
             </div>
+            <br>
         </div>
         <br>
     </div>
