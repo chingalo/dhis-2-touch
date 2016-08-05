@@ -18,7 +18,8 @@ angular.module('app.controllers', [])
                 systemInformation: {},
                 dataEntryForm: {},
                 report:{
-                    selectedReport : {}
+                    selectedReport : {},
+                    reportMetadata : {}
                 },
                 allOrgUnitData: {}
             }
@@ -519,7 +520,7 @@ angular.module('app.controllers', [])
             assignedDataSetForms: [],
             selectedDataSetForm: {},
             selectedDataSetFormDimension: {},
-            selectedDataSetFormPeriod: [],
+            periodList: [],
             selectedPeriod: {},
             currentPeriodOffset: 0,
             dataEntryForm: {
@@ -632,7 +633,7 @@ angular.module('app.controllers', [])
                     $scope.data.selectedDataSetForm = {};
                     $scope.data.selectedDataSetFormDimension = {};
                     $scope.data.selectedPeriod = {};
-                    $scope.data.selectedDataSetFormPeriod = [];
+                    $scope.data.periodList = [];
                     $scope.data.selectedOrganisationUnit = {
                         id: selectedOrganisationUnit.id,
                         name: selectedOrganisationUnit.name,
@@ -701,7 +702,7 @@ angular.module('app.controllers', [])
                 if (selectedDataSetForm.id != $scope.data.selectedDataSetForm.id) {
                     $scope.data.selectedPeriod = {};
                     $scope.data.selectedDataSetFormDimension = {};
-                    $scope.data.selectedDataSetFormPeriod = [];
+                    $scope.data.periodList = [];
                     $scope.data.currentPeriodOffset = 0;
                     $scope.data.selectedDataSetForm = selectedDataSetForm;
                     getPeriodSelections();
@@ -722,9 +723,9 @@ angular.module('app.controllers', [])
             var periods = dhis2.period.generator.generateReversedPeriods(periodType, $scope.data.currentPeriodOffset);
             periods = dhis2.period.generator.filterOpenPeriods(periodType, periods, openFuturePeriods);
             if (periods.length > 0) {
-                $scope.data.selectedDataSetFormPeriod = [];
+                $scope.data.periodList = [];
                 periods.forEach(function (period) {
-                    $scope.data.selectedDataSetFormPeriod.push({
+                    $scope.data.periodList.push({
                         endDate: period.endDate,
                         startDate: period.startDate,
                         iso: period.iso,
@@ -1892,15 +1893,17 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('reportParameterSelectionCtrl', function ($scope, $localStorage,
+    .controller('reportParameterSelectionCtrl', function ($scope, $localStorage,Notification,$state,
                                                           $ionicModal, $ionicLoading, $timeout, userFactory,
                                                           sqlLiteFactory, organisationUnitFactory) {
         //object for data entry selection screen
-        //@todo handling actions after report parameter selections
         $scope.data = {
             sortedOrganisationUnits: [],
             selectedOrganisationUnit: {},
-            selectedReport: {}
+            selectedPeriod : {},
+            selectedReport: {},
+            periodList : []
+
         };
 
         /**
@@ -1965,7 +1968,6 @@ angular.module('app.controllers', [])
                     id: organisationUnit.id,
                     name: organisationUnit.name,
                     ancestors: organisationUnit.ancestors,
-                    dataSets: organisationUnit.dataSets,
                     level: parseInt(organisationUnit.level)
                 });
                 if (organisationUnit.children) {
@@ -1974,7 +1976,6 @@ angular.module('app.controllers', [])
                             id: organisationUnitChild.id,
                             name: organisationUnitChild.name,
                             ancestors: organisationUnitChild.ancestors,
-                            dataSets: organisationUnitChild.dataSets,
                             level: parseInt(organisationUnitChild.level)
                         });
                     });
@@ -1992,16 +1993,149 @@ angular.module('app.controllers', [])
                 id: sortedOrganisationUnit.id,
                 name: sortedOrganisationUnit.name,
                 level: sortedOrganisationUnit.level,
-                ancestors: sortedOrganisationUnit.ancestors,
-                dataSets: sortedOrganisationUnit.dataSets
+                ancestors: sortedOrganisationUnit.ancestors
             };
-            console.log($scope.data.selectedOrganisationUnit);
             $scope.organisationUnitsModal.hide();
+            if(isReportParameter()){
+                setReportData();
+            }
         };
 
+        /**
+         * getSelectedReportDetails
+         */
         function getSelectedReportDetails(){
             $scope.data.selectedReport = $localStorage.app.report.selectedReport;
-            console.log($localStorage.app.report.selectedReport);
+            periodOption();
+        }
+
+        /**
+         * periodOption
+         */
+        function periodOption(){
+            var year = parseInt(new Date().getFullYear());
+            $scope.data.periodList = getPeriodOption(year);
+        }
+
+        /**
+         * getPeriodOption
+         * @param year
+         * @returns {Array}
+         */
+        function getPeriodOption(year){
+            var period = [];
+            for(var i = 0; i < 10; i ++){
+                var newYearValue = year --;
+                period.push({
+                    name : newYearValue,
+                    iso : newYearValue
+                });
+            }
+            return period;
+        }
+
+        /**
+         * changePeriodInterval
+         * @param type
+         */
+        $scope.changePeriodInterval = function(type){
+            var year = null;
+            if(type =='next'){
+                year = parseInt($scope.data.periodList[0].iso);
+                year +=9;
+            }else{
+                var periodOptionLength = $scope.data.periodList.length;
+                periodOptionLength = parseInt(periodOptionLength);
+                year = $scope.data.periodList[periodOptionLength-1].iso;
+            }
+            if(year > parseInt(new Date().getFullYear())){
+                var message = "There no period option further than this at moment";
+                Notification(message);
+            }else{
+                $scope.data.periodList = getPeriodOption(year);
+            }
+        };
+
+        /**
+         * setSelectedPeriod
+         * @param selectedPeriod
+         */
+        $scope.setSelectedPeriod = function(selectedPeriod){
+            $scope.data.selectedPeriod = selectedPeriod;
+            $scope.periodModal.hide();
+            if(isReportParameter()){
+                setReportData();
+            }
+        };
+
+
+        $scope.generateReport = function(){
+            if(isReportParameter()){
+                console.log($localStorage.app.report.reportMetadata);
+                $state.go('tabsController.reportView', {}, {});
+            }else{
+                Notification('Please select report parameter(s)');
+            }
+        };
+
+        /**
+         * isReportParameter
+         * @returns {boolean}
+         */
+        function isReportParameter(){
+            var result = false;
+            if($scope.data.selectedReport.reportParams.paramOrganisationUnit && $scope.data.selectedReport.reportParams.paramReportingPeriod){
+                if($scope.data.selectedOrganisationUnit.id && $scope.data.selectedPeriod.iso){
+                    result =true;
+                }
+            }else{
+                if($scope.data.selectedReport.reportParams.paramOrganisationUnit){
+                    if($scope.data.selectedOrganisationUnit.id){
+                        result =true;
+                    }
+                }
+                if($scope.data.selectedReport.reportParams.paramReportingPeriod){
+                    if($scope.data.selectedPeriod.iso){
+                        result =true;
+                    }
+                }
+            }
+            return result;
+        }
+
+        /**
+         * setReportData
+         */
+        //@todo hard code name for orgUnit
+        function setReportData(){
+            var selectedOrUnit = {
+                id : $scope.data.selectedOrganisationUnit.id,
+                name : $scope.data.selectedOrganisationUnit.name + " Dispensary",
+                code : $scope.data.selectedOrganisationUnit.code
+            };
+            $localStorage.app.report.reportMetadata = {
+                organisationUnit : selectedOrUnit,
+                organisationUnitChildren : [],
+                organisationUnitHierarchy : getOrganisationUnitHierarchy($scope.data.selectedOrganisationUnit.ancestors,selectedOrUnit),
+                period : $scope.data.selectedPeriod.iso
+            }
+        }
+
+        /**
+         * getOrganisationUnitHierarchy
+         * @param orgUnitAncestors
+         * @param selectedOrUnit
+         * @returns {Array}
+         */
+        function getOrganisationUnitHierarchy(orgUnitAncestors,selectedOrUnit){
+            var data = [];
+            var length = orgUnitAncestors.length;
+            data.push(selectedOrUnit);
+            for(var i=0 ;i < length; i ++){
+                var index = length - [i + 1];
+                data.push(orgUnitAncestors[index])
+            }
+            return data;
         }
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
@@ -2016,7 +2150,57 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('reportViewCtrl', function ($scope) {
+    .controller('reportViewCtrl', function ($scope,$localStorage,
+                                            sqlLiteFactory,$ionicLoading,
+                                            $timeout) {
+
+
+        $scope.data = {
+            selectedReport : {}
+        };
+
+        /**
+         * setProgressMessage
+         * @param message
+         */
+        function setProgressMessage(message) {
+            $ionicLoading.show({
+                template: message
+            });
+        }
+
+        /**
+         * hideProgressMessage
+         */
+        function hideProgressMessage() {
+            $ionicLoading.hide();
+        }
+
+        $scope.$on("$ionicView.afterEnter", function (event, data) {
+            $timeout(function(){
+                getReportDesignContent();
+                dhis2.database = $localStorage.app.baseBaseName;
+                dhis2.report = $localStorage.app.report.reportMetadata;
+            },100);
+        });
+
+        function getReportDesignContent(){
+            setProgressMessage('Loading report details from  local storage');
+            var reportId = $localStorage.app.report.selectedReport.id;
+            var resource = "reports",ids = [];
+            ids.push(reportId);
+            sqlLiteFactory.getDataFromTableByAttributes(resource,'id',ids).then(function(reports){
+                if(reports.length > 0){
+                    $scope.data.selectedReport.name = reports[0].name;
+                    $scope.data.selectedReport.designContent = reports[0].designContent;
+                }
+                hideProgressMessage();
+
+            },function(){
+                hideProgressMessage();
+                Notification('Fail to load report details from  local storage');
+            })
+        }
 
     })
 

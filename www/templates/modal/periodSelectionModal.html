@@ -18,11 +18,11 @@
         <div class="row">
             <div class="col col-100">
                 <ion-list>
-                    <ion-item ng-repeat=" period in data.selectedDataSetFormPeriod"  ng-click="setSelectedPeriod(period)">
+                    <ion-item ng-repeat=" period in data.periodList"  ng-click="setSelectedPeriod(period)">
                         {{ period.name }}
                     </ion-item>
                 </ion-list>
-                <ion-item ng-if = "data.selectedDataSetFormPeriod.length == 0">
+                <ion-item ng-if = "data.periodList.length == 0">
                     There is no period to select
                 </ion-item>
             </div>
