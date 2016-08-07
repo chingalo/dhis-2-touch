@@ -17,13 +17,14 @@ var dhis2 = {
       db.transaction(function (tx) {
         var query = "SELECT * FROM " + tableName + " WHERE " + attribute + " = ?";
         tx.executeSql(query, [id], function (tx, results) {
-          var len = results.rows.length;
-          var data = [];
-          console.log('getDataFromTableById : ' + len);
-          //for (var i = 0; i < len; i++) {
-          //  data.push(eval("(" + results.rows.item(i).data + ")"));
-          //}
-          defer.resolve(data);
+          //var len = results.rows.length;
+          //var data = [];
+          //console.log('getDataFromTableById : ' + len);
+          ////for (var i = 0; i < len; i++) {
+          ////  data.push(eval("(" + results.rows.item(i).data + ")"));
+          ////}
+          console.log('Table name :: getDataFromTableById ' + tableName);
+          defer.resolve(dhis2.formatQueryReturnResult(results,tableName));
         }, function (error) {
           defer.reject(error);
         });
@@ -43,13 +44,14 @@ var dhis2 = {
         tx.executeSql(query, ids, function (tx, results) {
           var len = results.rows.length;
           var data = [];
-          console.log('getDataFromTableById : ' + len);
-          //for (var i = 0; i < len; i++) {
-          //  var json = eval("(" + results.rows.item(i).data + ")");
-          //  var index = ids.indexOf(json.id);
-          //  ids.splice(index, 1);
-          //  data.push(json);
-          //}
+          var formattedResults = dhis2.formatQueryReturnResult(results,tableName);
+          for (var i = 0; i < len; i++) {
+            var json = formattedResults[i];
+            var index = ids.indexOf(json.id);
+            ids.splice(index, 1);
+            data.push(json);
+          }
+          console.log('Table name :: getDataFromTableByIds ' + tableName);
           defer.resolve(data, ids);
         }, function (error) {
           defer.reject(error);
@@ -65,18 +67,18 @@ var dhis2 = {
       for (var i = 1; i < ids.length; i++) {
         questionMarks += " OR id LIKE '%" + ids[i] + "%'";
       }
-      console.log('query ::' + query);
       db.transaction(function (tx) {
         var query = "SELECT * FROM " + tableName + " WHERE " + questionMarks;
         tx.executeSql(query, [], function (tx, results) {
-          var len = results.rows.length;
-          var data = [];
-          console.log('getDataFromTableById : ' + len);
-          //for (var i = 0; i < len; i++) {
-          //  var json = eval("(" + results.rows.item(i).data + ")");
-          //  data.push(json);
-          //}
-          defer.resolve(data);
+          //var len = results.rows.length;
+          //var data = [];
+          //console.log('getDataFromTableById : ' + len);
+          ////for (var i = 0; i < len; i++) {
+          ////  var json = eval("(" + results.rows.item(i).data + ")");
+          ////  data.push(json);
+          ////}
+          console.log('Table name :: searchDataFromTableByIds ' + tableName);
+          defer.resolve(dhis2.formatQueryReturnResult(results,tableName));
         }, function (error) {
           defer.reject(error);
         });
@@ -90,13 +92,14 @@ var dhis2 = {
       db.transaction(function (tx) {
         var query = "SELECT * FROM " + tableName + ";";
         tx.executeSql(query, [], function (tx, results) {
-          var len = results.rows.length;
-          var data = [];
-          console.log('getDataFromTableById : ' + len);
-          //for (var i = 0; i < len; i++) {
-          //  data.push(eval("(" + results.rows.item(i).data + ")"));
-          //}
-          defer.resolve(data);
+          //var len = results.rows.length;
+          //var data = [];
+          //console.log('getDataFromTableById : ' + len);
+          ////for (var i = 0; i < len; i++) {
+          ////  data.push(eval("(" + results.rows.item(i).data + ")"));
+          ////}
+          console.log('Table name :: getAllDataFromTable ' + tableName);
+          defer.resolve(dhis2.formatQueryReturnResult(results,tableName));
         }, function (error) {
           defer.reject(error);
         });

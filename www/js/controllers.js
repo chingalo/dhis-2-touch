@@ -1,7 +1,7 @@
 angular.module('app.controllers', [])
 
     .controller('mainCtrl', function ($scope, userFactory, $timeout,
-                                      Notification, $ionicLoading,
+                                      Notification, $ionicLoading,sqlLiteFactory,
                                       $localStorage, $ionicHistory
         , $state) {
 
@@ -131,6 +131,13 @@ angular.module('app.controllers', [])
                 return false;
             }
         };
+
+        dhis2.formatQueryReturnResult=function(result,tableName){
+            var dataBaseStructure = sqlLiteFactory.getDataBaseStructure();
+            var fields = dataBaseStructure[tableName].fields;
+            var formattedQueryReturnResult = sqlLiteFactory.formatQueryReturnResult(result, fields);;
+            return formattedQueryReturnResult;
+        }
 
 
     })
@@ -2110,7 +2117,7 @@ angular.module('app.controllers', [])
         function setReportData(){
             var selectedOrUnit = {
                 id : $scope.data.selectedOrganisationUnit.id,
-                name : $scope.data.selectedOrganisationUnit.name + " Dispensary",
+                name : $scope.data.selectedOrganisationUnit.name,
                 code : $scope.data.selectedOrganisationUnit.code
             };
             $localStorage.app.report.reportMetadata = {
