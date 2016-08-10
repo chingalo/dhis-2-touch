@@ -21,7 +21,13 @@ angular.module('app.controllers', [])
                     selectedReport : {},
                     reportMetadata : {}
                 },
-                allOrgUnitData: {}
+                allOrgUnitData: {},
+                settings :{
+                    currentSelected : "",
+                    synchronization:{},
+                    entryForm : {},
+                    dataReset : {}
+                }
             }
         }
 
@@ -1641,10 +1647,39 @@ angular.module('app.controllers', [])
         }
     })
 
-    .controller('settingsCtrl', function ($scope) {
+    .controller('settingsCtrl', function ($scope,$localStorage) {
+
+        $scope.data = {
+            settings : {}
+        };
+
+
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            console.log('setting view has been loaded successfully', data, event)
+            setSettingViewData();
+            console.log(JSON.stringify($scope.data));
+
+            //tabsController.settingDetails
         });
+
+
+        function setSettingViewData(){
+            if(!$localStorage.app.settings){
+                $localStorage.app.settings = {};
+                $localStorage.app.settings = {
+                    currentSelected : "",
+                    synchronization:{},
+                    entryForm : {},
+                    dataReset : {}
+                };
+                $scope.data.settings = $localStorage.app.settings;
+            }else{
+                $scope.data.settings = $localStorage.app.settings;
+            }
+        }
+
+        $scope.directToSettingDetails = function(currentSelected){
+            console.log('currentSelected :: ' + currentSelected);
+        };
     })
 
     .controller('dashBoardCtrl', function ($scope, $ionicLoading, $timeout) {

@@ -4,34 +4,40 @@
             <div class="row" ng-click="organisationUnitsModal.show()" style="padding-top: 0.5%;">
                 <div class="col col-100">
                     <h3>Organisation Unit</h3>
-                    <p ng-if ="data.selectedOrganisationUnit.id">
-                        {{ data.selectedOrganisationUnit.name }}
-                    </p>
-                    <p ng-if ="!data.selectedOrganisationUnit.id">
-                        Touch to select Organisation Unit
-                    </p>
+                    <div class = "touch-area-selection">
+                        <p ng-if ="data.selectedOrganisationUnit.id">
+                            {{ data.selectedOrganisationUnit.name }}
+                        </p>
+                        <p ng-if ="!data.selectedOrganisationUnit.id">
+                            Touch to select Organisation Unit
+                        </p>
+                    </div>
                 </div>
             </div>
             <div class="row" ng-click="dataEntryFormModal.show()" style="padding-top: 0.5%;">
                 <div class="col col-100">
                     <h3>Form</h3>
-                    <p ng-if ="data.selectedDataSetForm.id">
-                        {{ data.selectedDataSetForm.name }}
-                    </p>
-                    <p ng-if ="!data.selectedDataSetForm.id">
-                        Touch to select form
-                    </p>
+                    <div class = "touch-area-selection">
+                        <p ng-if ="data.selectedDataSetForm.id">
+                            {{ data.selectedDataSetForm.name }}
+                        </p>
+                        <p ng-if ="!data.selectedDataSetForm.id">
+                            Touch to select form
+                        </p>
+                    </div>
                 </div>
             </div>
             <div class="row" ng-click="periodModal.show()" style="padding-top: 0.5%;">
                 <div class="col col-100">
                     <h3>Period</h3>
-                    <p ng-if ="data.selectedPeriod.name">
-                        {{ data.selectedPeriod.name }}
-                    </p>
-                    <p ng-if ="!data.selectedPeriod.name">
-                        Touch to select period
-                    </p>
+                    <div class = "touch-area-selection">
+                        <p ng-if ="data.selectedPeriod.name">
+                            {{ data.selectedPeriod.name }}
+                        </p>
+                        <p ng-if ="!data.selectedPeriod.name">
+                            Touch to select period
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -39,12 +45,14 @@
                 <div ng-if = "data.selectedDataSetForm.categoryCombo.name !='default'" class="col col-100">
                     <div ng-repeat="category in data.selectedDataSetForm.categoryCombo.categories" ng-click="openDataSetFormDimensionModal($index);">
                         <h3>{{ category.name }}</h3>
-                        <p ng-if ="data.selectedDataSetFormDimension[category.id]">
-                            {{ data.selectedDataSetFormDimension[category.id].name }}
-                        </p>
-                        <p ng-if ="!data.selectedDataSetFormDimension[category.id]">
-                            Touch to select option
-                        </p>
+                        <div class = "touch-area-selection">
+                            <p ng-if ="data.selectedDataSetFormDimension[category.id]">
+                                {{ data.selectedDataSetFormDimension[category.id].name }}
+                            </p>
+                            <p ng-if ="!data.selectedDataSetFormDimension[category.id]">
+                                Touch to select option
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

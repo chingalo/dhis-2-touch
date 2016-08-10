@@ -16,7 +16,7 @@ angular.module('app', ['ionic',
         'angular-spinkit',
         'app.directives'])
 
-    .run(function ($ionicPlatform, $cordovaSplashscreen, $cordovaSQLite,sqlLiteFactory) {
+    .run(function ($ionicPlatform, $cordovaSplashscreen) {
         $ionicPlatform.ready(function () {
             var db = null;
             if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
@@ -26,12 +26,12 @@ angular.module('app', ['ionic',
             if (window.StatusBar) {
                 StatusBar.styleDefault();
             }
-
+            $cordovaSplashscreen.hide();
         });
     })
     .config(function(NotificationProvider) {
         NotificationProvider.setOptions({
-            delay: 5000,
+            delay: 3500,
             startTop: 20,
             startRight: 10,
             positionX: 'center',
