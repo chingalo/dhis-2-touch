@@ -1555,8 +1555,8 @@ angular.module('app.controllers', [])
         $scope.data = {
             appInformation: {
                 Name: 'DHIS 2 Touch',
-                Version: '1.01',
-                'App revision': 'd5950ae',
+                Version: '1.02',
+                'App revision': '13b814b',
                 'Release status': 'Snapshot'
                 //'Release' 'Snapshot'
             },
