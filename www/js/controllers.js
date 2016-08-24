@@ -1709,7 +1709,7 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('trackerCaptureCtrl', function ($scope, $ionicLoading, $timeout) {
+    .controller('trackerCaptureCtrl', function ($scope, $ionicLoading, $timeout, $ionicModal, Notification) {
 
 
         /**
@@ -1733,6 +1733,26 @@ angular.module('app.controllers', [])
             $timeout(function () {
                 console.log("tracker view list");
             }, 100);
+        });
+
+        $scope.reports = function(){
+            Notification("Reports btn") ;
+        };
+
+        $scope.registration = function(){
+            Notification("Registration btn") ;
+        };
+
+        $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {
+            scope: $scope
+        }).then(function (modal) {
+            $scope.organisationUnitsModal = modal;
+        });
+
+        $ionicModal.fromTemplateUrl('templates/modal/trackerProgramModal.html', {
+            scope: $scope
+        }).then(function (modal) {
+            $scope.trackerProgramModal = modal;
         });
 
     })

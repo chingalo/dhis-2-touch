@@ -7,26 +7,26 @@
         "files": {}
     },
     "installed_plugins": {
-        "cordova-plugin-splashscreen": {
-            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
-        },
         "cordova-plugin-console": {
-            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+            "PACKAGE_NAME": "com.hipstz.dhis2.dhis2touch"
         },
         "cordova-plugin-device": {
-            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+            "PACKAGE_NAME": "com.hipstz.dhis2.dhis2touch"
+        },
+        "cordova-plugin-splashscreen": {
+            "PACKAGE_NAME": "com.hipstz.dhis2.dhis2touch"
         },
         "cordova-plugin-statusbar": {
-            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
-        },
-        "cordova-sqlite-storage": {
-            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
-        },
-        "ionic-plugin-keyboard": {
-            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+            "PACKAGE_NAME": "com.hipstz.dhis2.dhis2touch"
         },
         "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "com.ionicframework.Dhis2Touch195150"
+            "PACKAGE_NAME": "com.hipstz.dhis2.dhis2touch"
+        },
+        "cordova-sqlite-storage": {
+            "PACKAGE_NAME": "com.hipstz.dhis2.dhis2touch"
+        },
+        "ionic-plugin-keyboard": {
+            "PACKAGE_NAME": "com.hipstz.dhis2.dhis2touch"
         }
     },
     "dependent_plugins": {}

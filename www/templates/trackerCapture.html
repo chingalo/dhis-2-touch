@@ -1,9 +1,46 @@
 <ion-view title="Tracker Capture" id="page12" style="background-color:#F5F5F5;" class=" ">
     <ion-content padding="true" class="has-header">
-        <div class="list card " id="trackerCapture-card21">
-            <div class=" item item-image">
-                <img src="img/O8ebUUOCT3W6JLRpulDC_comingsoon.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto;">
-            </div>
-        </div>
+		<div class="row">
+			<div class="col col-50">
+				<button class="button button-full button-positive" ng-click="registration()">
+					Registration
+				</button>
+			</div>
+			<div class="col col-50">
+				<button class="button button-full button-positive" ng-click="reports()">
+					Reports
+				</button>
+			</div>
+		</div>
+		<div class="row" ng-click="organisationUnitsModal.show()" style="padding-top: 0.5%;">
+			<div class="col col-100">
+				<h3>Organisation Unit</h3>
+				<div class="touch-area-selection">
+					<p ng-if ="data.selectedOrganisationUnit.id">
+						{{ data.selectedOrganisationUnit.name }}
+					</p>
+					<p ng-if ="!data.selectedOrganisationUnit.id">
+						Tap to Select Organisation Unit
+					</p>
+				</div>
+			</div>
+		</div>
+		<div class="row" ng-click="trackerProgramModal.show()" style="padding-top: 0.5%;">
+			<div class="col col-100">
+				<h3>Program</h3>
+				<div class="touch-area-selection">
+					<p>Tap to Select Program</p>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="item-input-inset bar bar-light">
+				<label class="item-input-wrapper">
+					<i class="icon ion-search placeholder-icon"></i>
+					<input type="search" placeholder="Type your search criteria">
+					<button class="button button-positive icon ion-android-search"></button>
+				</label>
+			</div>
+		</div>
     </ion-content>
 </ion-view>
