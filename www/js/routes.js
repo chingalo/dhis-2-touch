@@ -123,7 +123,7 @@ angular.module('app.routes', [])
             }
           })
 
-          .state('trackerCapture.report', {
+          .state('tabsController.trackerCaptureReport', {
             url: '/tracker-report',
             views: {
               'tab1': {

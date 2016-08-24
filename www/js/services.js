@@ -659,22 +659,3 @@ angular.module('app.services', [])
     .service('BlankService', [function () {
 
     }]);
-
-function getSortedOrgUnit(orgUnits) {
-    var data = [];
-    orgUnits.forEach(function (orgUnit) {
-        data.push(sortingOrUnit(orgUnit));
-    });
-    return data;
-}
-
-//sorting all orgUnits and its children
-function sortingOrUnit(parentOrgUnit) {
-    if (parentOrgUnit.children) {
-        parentOrgUnit.children = $filter('orderBy')(parentOrgUnit.children, 'name');
-        parentOrgUnit.children.forEach(function (child, index) {
-            parentOrgUnit.children[index] = sortingOrUnit(child);
-        });
-    }
-    return parentOrgUnit;
-}

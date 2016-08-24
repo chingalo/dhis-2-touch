@@ -1736,7 +1736,7 @@ angular.module('app.controllers', [])
         });
 
         $scope.trackerReport = function(){
-            $state.go('trackerCapture.report', {}, {});
+            $state.go('tabsController.trackerCaptureReport', {}, {});
             Notification('here');
         };
 
