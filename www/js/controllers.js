@@ -1709,7 +1709,7 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('trackerCaptureCtrl', function ($scope, $ionicLoading, $timeout, $ionicModal, Notification) {
+    .controller('trackerCaptureCtrl', function ($scope, $state, $ionicLoading, $timeout, $ionicModal, Notification) {
 
 
         /**
@@ -1735,8 +1735,9 @@ angular.module('app.controllers', [])
             }, 100);
         });
 
-        $scope.reports = function(){
-            Notification("Reports btn") ;
+        $scope.trackerReport = function(){
+            $state.go('trackerCapture.report', {}, {});
+            Notification('here');
         };
 
         $scope.registration = function(){
@@ -1755,6 +1756,7 @@ angular.module('app.controllers', [])
             $scope.trackerProgramModal = modal;
         });
 
+        //$state.go('trackerCapture.report', {}, {});
     })
 
     .controller('reportListCtrl', function ($scope, $ionicLoading,Notification,
