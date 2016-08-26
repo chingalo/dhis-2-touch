@@ -1709,8 +1709,105 @@ angular.module('app.controllers', [])
         });
     })
 
-    .controller('trackerCaptureCtrl', function ($scope, $state, $ionicLoading, $timeout, $ionicModal, Notification) {
+    .controller('trackerCaptureCtrl', function ($scope, $state, $ionicLoading, $timeout, $ionicModal, Notification,
+                                                userFactory, sqlLiteFactory, organisationUnitFactory, $localStorage) {
 
+        $scope.data = {
+            sortedOrganisationUnits: [],
+            selectedOrganisationUnit: {}
+        };
+
+        /**
+         * getUserAssignedOrgUnits
+         */
+        function getUserAssignedOrgUnits() {
+            var resource = "organisationUnits";
+            var ids = [];
+            userFactory.getCurrentLoginUserUserdata().then(function (userData) {
+                userData.organisationUnits.forEach(function (organisationUnit) {
+                    ids.push(organisationUnit.id);
+                });
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", ids).then(function (assignedOrgUnits) {
+                    organisationUnitFactory.getSortedOrganisationUnits(assignedOrgUnits).then(function (sortedOrganisationUnits) {
+                        $scope.data.sortedOrganisationUnits = getOrganisationUnitsArrayList(sortedOrganisationUnits);
+                        hideProgressMessage();
+                    });
+                }, function () {
+                    //fail to get org units from local storage
+                    Notification('Fail to get assigned organisation units from local storage ');
+                });
+            }, function () {
+            });
+        }
+
+        /**
+         * getOrganisationUnitsArrayList
+         * @param organisationUnits
+         * @returns {Array}
+         */
+        function getOrganisationUnitsArrayList(organisationUnits) {
+            var organisationUnitsArrayList = [];
+            $localStorage.app.allOrgUnitData = {};
+            organisationUnits.forEach(function (organisationUnit) {
+                $localStorage.app.allOrgUnitData[organisationUnit.id] = organisationUnit.name;
+                organisationUnitsArrayList.push({
+                    id: organisationUnit.id,
+                    name: organisationUnit.name,
+                    ancestors: organisationUnit.ancestors,
+                    dataSets: organisationUnit.dataSets,
+                    level: parseInt(organisationUnit.level)
+                });
+                if (organisationUnit.children) {
+                    getOrganisationUnitsArrayList(organisationUnit.children).forEach(function (organisationUnitChild) {
+                        $localStorage.app.allOrgUnitData[organisationUnitChild.id] = organisationUnitChild.name;
+                        organisationUnitsArrayList.push({
+                            id: organisationUnitChild.id,
+                            name: organisationUnitChild.name,
+                            ancestors: organisationUnitChild.ancestors,
+                            dataSets: organisationUnitChild.dataSets,
+                            level: parseInt(organisationUnitChild.level)
+                        });
+                    });
+                }
+            });
+
+            return organisationUnitsArrayList;
+        }
+
+        /**
+         * setSelectedOrganisationUnit
+         * @param selectedOrganisationUnit
+         */
+        $scope.setSelectedOrganisationUnit = function (selectedOrganisationUnit) {
+            if ($scope.data.selectedOrganisationUnit.id) {
+                if ($scope.data.selectedOrganisationUnit.id != selectedOrganisationUnit.id) {
+                    //reset forms array as well as selected form if any
+                    $scope.data.assignedDataSetForms = [];
+                    $scope.data.selectedDataSetForm = {};
+                    $scope.data.selectedDataSetFormDimension = {};
+                    $scope.data.selectedPeriod = {};
+                    $scope.data.periodList = [];
+                    $scope.data.selectedOrganisationUnit = {
+                        id: selectedOrganisationUnit.id,
+                        name: selectedOrganisationUnit.name,
+                        level: selectedOrganisationUnit.level,
+                        ancestors: selectedOrganisationUnit.ancestors,
+                        dataSets: selectedOrganisationUnit.dataSets
+                    };
+                    loadDataSets();
+                }
+            } else {
+                $scope.data.selectedOrganisationUnit = {
+                    id: selectedOrganisationUnit.id,
+                    name: selectedOrganisationUnit.name,
+                    level: selectedOrganisationUnit.level,
+                    ancestors: selectedOrganisationUnit.ancestors,
+                    dataSets: selectedOrganisationUnit.dataSets
+                };
+                loadDataSets();
+            }
+            $scope.organisationUnitsModal.hide();
+        };
 
         /**
          * setProgressMessage
@@ -1730,9 +1827,12 @@ angular.module('app.controllers', [])
         }
 
         $scope.$on("$ionicView.afterEnter", function (event, data) {
-            $timeout(function () {
-                console.log("tracker view list");
-            }, 100);
+            if ($scope.data.sortedOrganisationUnits.length == 0) {
+                $timeout(function () {
+                    setProgressMessage('Loading Organisation Units');
+                    getUserAssignedOrgUnits();
+                }, 100);
+            }
         });
 
         $scope.trackerReport = function(){
@@ -1759,7 +1859,6 @@ angular.module('app.controllers', [])
             $scope.trackerProgramModal = modal;
         });
 
-        //$state.go('trackerCapture.report', {}, {});
     })
 
     .controller('reportListCtrl', function ($scope, $ionicLoading,Notification,
