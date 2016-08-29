@@ -517,7 +517,9 @@ angular.module('app.controllers', [])
                     );
                 });
                 $q.all(promises).then(function () {
-
+                    $localStorage.app.user.isLogin = true;
+                    hideProgressMessage();
+                    $state.go('tabsController.apps', {}, {});
                 }, function () {
                     hideProgressMessage();
                     Notification('Fail to save Programs data');
@@ -526,9 +528,6 @@ angular.module('app.controllers', [])
                 hideProgressMessage();
                 Notification('Fail to download ' + resource);
             });
-            $localStorage.app.user.isLogin = true;
-            hideProgressMessage();
-            $state.go('tabsController.apps', {}, {});
         }
 
         /**
