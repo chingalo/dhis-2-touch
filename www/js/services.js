@@ -282,6 +282,14 @@ angular.module('app.services', [])
                     {value: 'syncStatus', type: 'TEXT'},
                     {value: 'dataSetId', type: 'TEXT'}
                 ]
+            },
+            programs: {
+                fields: [
+                    {value: 'id', type: 'TEXT'},
+                    {value: 'version', type: 'TEXT'},
+                    {value: 'programTrackedEntityAttributes', type: 'LONGTEXT'},
+                    {value: 'programStages', type: 'LONGTEXT'}
+                ]
             }
         };
 

@@ -295,7 +295,10 @@ angular.module('app.controllers', [])
                 organisationUnits.forEach(function (organisationUnit) {
                     if (organisationUnit.id) {
                         orgUnitId = organisationUnit.id;
-                        fields = "id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name]]]]]]";
+                        fields = "id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name]," +
+                            "dataSets[id],level,children[id,name,ancestors[id,name],dataSets[id],level," +
+                            "children[id,name,ancestors[id,name],dataSets[id],level,children[id,name,ancestors[id,name]," +
+                            "dataSets[id],level,children[id,name,ancestors[id,name]]]]]]";
                     }
                     promises.push(
                         systemFactory.downloadMetadata(resource, orgUnitId, fields).then(function (orgUnitData) {
@@ -485,9 +488,7 @@ angular.module('app.controllers', [])
                     );
                 });
                 $q.all(promises).then(function () {
-                    $localStorage.app.user.isLogin = true;
-                    hideProgressMessage();
-                    $state.go('tabsController.apps', {}, {});
+                    downloadingTrackerPrograms();
                 }, function () {
                     hideProgressMessage();
                     Notification('Fail to save indicators data');
@@ -496,6 +497,38 @@ angular.module('app.controllers', [])
                 hideProgressMessage();
                 Notification('Fail to download ' + resource);
             });
+        }
+
+        function  downloadingTrackerPrograms(){
+            var resource = "programs";
+            var fields = "id,version,programTrackedEntityAttributes[trackedEntityAttribute[id,optionSet[id]]]," +
+                "programStages[id,programStageDataElements[dataElement[id,optionSet[id]]]]";
+            systemFactory.downloadMetadata(resource, null, fields).then(function (response) {
+                var promises = [];
+                var index = 1;
+                response[resource].forEach(function (data) {
+                    promises.push(
+                        sqlLiteFactory.insertDataOnTable(resource, data).then(function () {
+                            var savingPercentage = ((index / response[resource].length) * 100).toFixed(2);
+                            setProgressMessage('Saving Programs to local storage ' + savingPercentage + "%");
+                            index ++;
+                        }, function () {
+                        })
+                    );
+                });
+                $q.all(promises).then(function () {
+
+                }, function () {
+                    hideProgressMessage();
+                    Notification('Fail to save Programs data');
+                });
+            }, function () {
+                hideProgressMessage();
+                Notification('Fail to download ' + resource);
+            });
+            $localStorage.app.user.isLogin = true;
+            hideProgressMessage();
+            $state.go('tabsController.apps', {}, {});
         }
 
         /**
