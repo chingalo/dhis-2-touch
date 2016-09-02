@@ -501,8 +501,8 @@ angular.module('app.controllers', [])
 
         function  downloadingTrackerPrograms(){
             var resource = "programs";
-            var fields = "id,version,programTrackedEntityAttributes[trackedEntityAttribute[id,optionSet[id]]]," +
-                "programStages[id,programStageDataElements[dataElement[id,optionSet[id]]]]";
+            var fields = "id,name,version,programTrackedEntityAttributes[trackedEntityAttribute[id,optionSet[id]]]," +
+                "organisationUnits[id, displayName],programStages[id,programStageDataElements[dataElement[id,optionSet[id]]]]";
             systemFactory.downloadMetadata(resource, null, fields).then(function (response) {
                 var promises = [];
                 var index = 1;
@@ -1746,7 +1746,8 @@ angular.module('app.controllers', [])
 
         $scope.data = {
             sortedOrganisationUnits: [],
-            selectedOrganisationUnit: {}
+            selectedOrganisationUnit: {},
+            assignedPrograms: []
         };
 
         /**
@@ -1786,7 +1787,6 @@ angular.module('app.controllers', [])
                     id: organisationUnit.id,
                     name: organisationUnit.name,
                     ancestors: organisationUnit.ancestors,
-                    dataSets: organisationUnit.dataSets,
                     level: parseInt(organisationUnit.level)
                 });
                 if (organisationUnit.children) {
@@ -1796,7 +1796,6 @@ angular.module('app.controllers', [])
                             id: organisationUnitChild.id,
                             name: organisationUnitChild.name,
                             ancestors: organisationUnitChild.ancestors,
-                            dataSets: organisationUnitChild.dataSets,
                             level: parseInt(organisationUnitChild.level)
                         });
                     });
@@ -1813,33 +1812,56 @@ angular.module('app.controllers', [])
         $scope.setSelectedOrganisationUnit = function (selectedOrganisationUnit) {
             if ($scope.data.selectedOrganisationUnit.id) {
                 if ($scope.data.selectedOrganisationUnit.id != selectedOrganisationUnit.id) {
-                    //reset forms array as well as selected form if any
-                    $scope.data.assignedDataSetForms = [];
-                    $scope.data.selectedDataSetForm = {};
-                    $scope.data.selectedDataSetFormDimension = {};
-                    $scope.data.selectedPeriod = {};
-                    $scope.data.periodList = [];
+
+                    $scope.data.assignedPrograms = [];
                     $scope.data.selectedOrganisationUnit = {
                         id: selectedOrganisationUnit.id,
                         name: selectedOrganisationUnit.name,
                         level: selectedOrganisationUnit.level,
-                        ancestors: selectedOrganisationUnit.ancestors,
-                        dataSets: selectedOrganisationUnit.dataSets
+                        ancestors: selectedOrganisationUnit.ancestors
                     };
-                    loadDataSets();
+                    loadPrograms();
                 }
             } else {
                 $scope.data.selectedOrganisationUnit = {
                     id: selectedOrganisationUnit.id,
                     name: selectedOrganisationUnit.name,
                     level: selectedOrganisationUnit.level,
-                    ancestors: selectedOrganisationUnit.ancestors,
-                    dataSets: selectedOrganisationUnit.dataSets
+                    ancestors: selectedOrganisationUnit.ancestors
                 };
-                loadDataSets();
+                loadPrograms();
             }
             $scope.organisationUnitsModal.hide();
         };
+
+        /**
+         * loadPrograms
+         */
+        function loadPrograms() {
+            setProgressMessage('Loading programs');
+            var assignedProgramsIdsByUserRole = [];
+            var resource = "programs";
+            userFactory.getCurrentLoginUserUserdata().then(function (userData) {
+                userData.userRoles.forEach(function (userRole) {
+                    if (userRole.programs) {
+                        userRole.programs.forEach(function (programs) {
+                            assignedProgramsIdsByUserRole.push(programs.id);
+                        });
+                    }
+                });
+
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", assignedProgramsIdsByUserRole).then(function () {
+                    assignedProgramsIdsByUserRole = null;
+                    resource = null;
+                    hideProgressMessage();
+                }, function () {
+                    //fail to get org units from local storage
+                    Notification('Fail to get assigned programs from local storage');
+                });
+            }, function () {
+            });
+
+        }
 
         /**
          * setProgressMessage
@@ -1873,10 +1895,6 @@ angular.module('app.controllers', [])
 
         $scope.trackerRegistration = function(){
             $state.go('tabsController.trackerCapture', {}, {});
-        };
-
-        $scope.registration = function(){
-            Notification("Registration btn") ;
         };
 
         $ionicModal.fromTemplateUrl('templates/modal/organisationUnitsModal.html', {

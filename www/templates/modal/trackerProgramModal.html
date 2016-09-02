@@ -6,7 +6,6 @@
         </div>
     </ion-header-bar>
     <ion-content>
-
         <div class="row">
             <div class="col col-100">
                 <label class="item item-input">
@@ -15,12 +14,15 @@
                 </label>
             </div>
         </div>
-
         <div class="row">
             <div class="col col-100">
                 <ion-list>
-                    <ion-item>Child Program</ion-item>
-                    <ion-item>TB Program</ion-item>
+                    <ion-item ng-repeat="assignedProgram in data.assignedPrograms|filter: {name  :search}">
+                        {{ assignedProgram.name }}
+                    </ion-item>
+                    <ion-item ng-if = "data.assignedPrograms.length == 0">
+                        There is no Programs to select
+                    </ion-item>
                 </ion-list>
             </div>
         </div>

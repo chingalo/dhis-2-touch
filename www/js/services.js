@@ -61,7 +61,7 @@ angular.module('app.services', [])
         var userFactory = {
             authenticateUser: function () {
                 var defer = $q.defer();
-                var fields = "fields=[:all],userCredentials[userRoles[name,dataSets[id,name]]";
+                var fields = "fields=[:all],userCredentials[userRoles[name,dataSets[id,name],programs[id,name]]";
                 $http.get($localStorage.app.baseUrl + '/api/me.json?' + fields).then(function (response) {
                     defer.resolve(response.data);
                 }, function (error) {
@@ -286,8 +286,10 @@ angular.module('app.services', [])
             programs: {
                 fields: [
                     {value: 'id', type: 'TEXT'},
+                    {value: 'name', type: 'TEXT'},
                     {value: 'version', type: 'TEXT'},
                     {value: 'programTrackedEntityAttributes', type: 'LONGTEXT'},
+                    {value: 'organisationUnits', type: 'LONGTEXT'},
                     {value: 'programStages', type: 'LONGTEXT'}
                 ]
             }
