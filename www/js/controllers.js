@@ -1849,8 +1849,24 @@ angular.module('app.controllers', [])
                         });
                     }
                 });
-
-                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", assignedProgramsIdsByUserRole).then(function () {
+                console.log('assignedProgramsIdsByUserRole');
+                console.log(JSON.stringify(assignedProgramsIdsByUserRole));
+                var programsByOrgUnitAndUserRoles =[];
+                sqlLiteFactory.getDataFromTableByAttributes(resource, "id", assignedProgramsIdsByUserRole).then(function (programs) {
+                    console.log('programs');
+                    console.log(JSON.stringify(programs));
+                    programs.forEach(function(program){
+                        program.organisationUnits.forEach(function(organisationUnit){
+                            if(organisationUnit.id == $scope.data.selectedOrganisationUnit.id){
+                                programsByOrgUnitAndUserRoles.push({
+                                    id : program.id,
+                                    name : program.name
+                                })
+                            }
+                        })
+                    });
+                    console.log('programsByOrgUnitAndUserRoles');
+                    console.log(JSON.stringify(programsByOrgUnitAndUserRoles));
                     assignedProgramsIdsByUserRole = null;
                     resource = null;
                     hideProgressMessage();
